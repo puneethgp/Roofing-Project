@@ -192,40 +192,40 @@
                 // Ceiling Tiles
                 if (materials.ceilingTiles && materials.ceilingTiles.length > 0) {
                     html += `
-                        <div class="material-preview-card" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${materials.ceilingTiles[0].url}') center/cover; padding: 3rem 2rem;">
-                            <div class="material-icon" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">🏗️</div>
-                            <h3 style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Ceiling Tiles</h3>
-                            <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${materials.ceilingTiles.length} premium options</p>
-                        </div>
+                        <a href="materials.html#ceiling-tiles" class="material-preview-card" style="text-decoration: none; display: block;">
+                            <div class="material-icon">🏗️</div>
+                            <h3>Ceiling Tiles</h3>
+                            <p>${materials.ceilingTiles.length} premium options available. Click to view gallery.</p>
+                        </a>
                     `;
                 } else {
-                    html += `<div class="material-preview-card"><div class="material-icon">🏗️</div><h3>Ceiling Tiles</h3><p>Premium acoustic and decorative ceiling tiles</p></div>`;
+                    html += `<a href="materials.html#ceiling-tiles" class="material-preview-card" style="text-decoration: none; display: block;"><div class="material-icon">🏗️</div><h3>Ceiling Tiles</h3><p>Premium acoustic and decorative ceiling tiles</p></a>`;
                 }
                 
                 // Roof Tiles
                 if (materials.roofTiles && materials.roofTiles.length > 0) {
                     html += `
-                        <div class="material-preview-card" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${materials.roofTiles[0].url}') center/cover; padding: 3rem 2rem;">
-                            <div class="material-icon" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">🏠</div>
-                            <h3 style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Roof Tiles</h3>
-                            <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${materials.roofTiles.length} premium options</p>
-                        </div>
+                        <a href="materials.html#roof-tiles" class="material-preview-card" style="text-decoration: none; display: block;">
+                            <div class="material-icon">🏠</div>
+                            <h3>Roof Tiles</h3>
+                            <p>${materials.roofTiles.length} premium options available. Click to view gallery.</p>
+                        </a>
                     `;
                 } else {
-                    html += `<div class="material-preview-card"><div class="material-icon">🏠</div><h3>Roof Tiles</h3><p>Durable and weather-resistant roofing materials</p></div>`;
+                    html += `<a href="materials.html#roof-tiles" class="material-preview-card" style="text-decoration: none; display: block;"><div class="material-icon">🏠</div><h3>Roof Tiles</h3><p>Durable and weather-resistant roofing materials</p></a>`;
                 }
                 
                 // Fabrication Materials
                 if (materials.fabrication && materials.fabrication.length > 0) {
                     html += `
-                        <div class="material-preview-card" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${materials.fabrication[0].url}') center/cover; padding: 3rem 2rem;">
-                            <div class="material-icon" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">🔧</div>
-                            <h3 style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Fabrication</h3>
-                            <p style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${materials.fabrication.length} premium options</p>
-                        </div>
+                        <a href="materials.html#fabrication" class="material-preview-card" style="text-decoration: none; display: block;">
+                            <div class="material-icon">🔧</div>
+                            <h3>Fabrication</h3>
+                            <p>${materials.fabrication.length} premium options available. Click to view gallery.</p>
+                        </a>
                     `;
                 } else {
-                    html += `<div class="material-preview-card"><div class="material-icon">🔧</div><h3>Fabrication Materials</h3><p>Custom fabrication and structural components</p></div>`;
+                    html += `<a href="materials.html#fabrication" class="material-preview-card" style="text-decoration: none; display: block;"><div class="material-icon">🔧</div><h3>Fabrication Materials</h3><p>Custom fabrication and structural components</p></a>`;
                 }
                 
                 grid.innerHTML = html;
