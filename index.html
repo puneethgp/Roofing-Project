@@ -183,7 +183,14 @@
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                allProjects = data;
+                // Map from lowercase DB columns to the camelCase properties expected by the app
+                allProjects = data.map(p => ({
+                    ...p,
+                    completionDate: p.completiondate || p.completionDate || '',
+                    outputImages: p.outputimages || p.outputImages || [],
+                    progressImages: p.progressimages || p.progressImages || [],
+                    materialImages: p.materialimages || p.materialImages || []
+                }));
                 
                 // If cloud is empty, show a nice message
                 if (allProjects.length === 0) {

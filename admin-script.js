@@ -670,7 +670,15 @@ async function getAllProjects() {
         
         // Convert array to object format for compatibility with existing code
         const projectsObj = {};
-        data.forEach(p => { projectsObj[p.id] = p; });
+        data.forEach(p => { 
+            projectsObj[p.id] = {
+                ...p,
+                completionDate: p.completiondate || p.completionDate || '',
+                outputImages: p.outputimages || p.outputImages || [],
+                progressImages: p.progressimages || p.progressImages || [],
+                materialImages: p.materialimages || p.materialImages || []
+            }; 
+        });
         return projectsObj;
     } catch (error) {
         console.error('❌ Error fetching projects from Supabase:', error);
@@ -725,15 +733,30 @@ async function saveProject(projectData) {
         const isUpdate = !!document.getElementById('projectId').value;
         let result;
         
+        // Map to lowercase to avoid PostgreSQL schema case sensitivity issues
+        const dbData = {
+            id: projectData.id,
+            title: projectData.title,
+            description: projectData.description,
+            address: projectData.address,
+            duration: String(projectData.duration || ''),
+            completiondate: String(projectData.completionDate || ''),
+            owner: projectData.owner,
+            outputimages: projectData.outputImages || [],
+            progressimages: projectData.progressImages || [],
+            materialimages: projectData.materialImages || [],
+            materials: projectData.materials || []
+        };
+        
         if (isUpdate) {
             result = await supabase
                 .from('projects')
-                .update(projectData)
-                .eq('id', projectData.id);
+                .update(dbData)
+                .eq('id', dbData.id);
         } else {
             result = await supabase
                 .from('projects')
-                .insert([projectData]);
+                .insert([dbData]);
         }
         
         if (result.error) throw result.error;
