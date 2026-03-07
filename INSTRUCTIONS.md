@@ -83,47 +83,42 @@ Then open your browser to:
 ---
 
 ## 🔄 How Data Syncs
+- **Admin Panel** → Creates/edits projects → Saves to **Supabase Cloud Storage**
+- **Main Website** → Reads from **Supabase Cloud Storage** → Displays projects
 
-- **Admin Panel** → Creates/edits projects → Saves to browser storage
-- **Main Website** → Reads from browser storage → Displays projects
-
-**Important**: Both pages must be opened in the **same browser** on the **same computer** for data sharing to work.
+**Note**: Since we are using cloud storage, your changes will be visible to everyone on the internet once saved!
 
 ---
 
 ## 📝 Managing Projects
-
 ### Edit a Project
 1. Go to Admin Panel → "Manage Projects"
 2. Click **✏️ Edit** button on any project
 3. Update information
 4. Click "Save Project"
-5. Refresh main website to see changes
+5. The changes will reflect immediately on the main website
 
 ### Delete a Project
 1. Go to Admin Panel → "Manage Projects"
 2. Click **🗑️ Delete** button
 3. Confirm deletion
-4. Refresh main website - project removed!
+4. Project will be removed from the cloud and the website.
 
 ---
 
 ## 🖼️ Image Guidelines
-
 **Best Practices:**
 - Use high-quality images (recommended: 1200px+ width)
-- JPG format for photos, PNG for graphics
+- Images are automatically uploaded to Supabase Storage
 - Keep file sizes under 5MB each
-- Use descriptive file names
-
-**Image Types:**
-- **Output Images**: Final completed work, glamour shots
-- **Progress Images**: During construction, different stages
-- **Material Images**: Raw materials, supplies, tools used
 
 ---
 
-## 🔒 Security
+## 🔒 Security & Cloud Setup
+**Setup Cloud Storage:**
+1. Create a project at [supabase.com](https://supabase.com)
+2. Get your `SUPABASE_URL` and `SUPABASE_ANON_KEY`
+3. Update `config.js` with these values
 
 **Change Default Password:**
 1. Open `admin-script.js` in a text editor
@@ -134,11 +129,10 @@ Then open your browser to:
 ---
 
 ## 💾 Data Storage
-
-- All data stored in browser's **localStorage**
-- Data persists after closing browser
-- No internet required after initial load
-- To backup: Export browser data or keep project records
+- All data stored in **Supabase Database & Storage**
+- Data is accessible from any device or browser
+- Automatic backups are handled by Supabase
+- Ensure your `config.js` is correctly setup to connect!
 
 ---
 

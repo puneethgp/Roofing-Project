@@ -872,7 +872,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Open project edit modal
-function openProjectEditModal(projectId = null) {
+async function openProjectEditModal(projectId = null) {
     console.log('🔓 Opening project edit modal...', projectId ? `Editing project: ${projectId}` : 'Creating new project');
     
     const modal = document.getElementById('projectEditModal');
@@ -887,7 +887,7 @@ function openProjectEditModal(projectId = null) {
     if (projectId) {
         // Edit existing project
         modalTitle.textContent = 'Edit Project';
-        const projects = getAllProjects();
+        const projects = await getAllProjects();
         const project = projects[projectId];
         if (project) {
             loadProjectDataIntoForm(project);
@@ -1092,13 +1092,13 @@ async function handleProjectSubmit(e) {
         console.log('💾 Saving project:', projectData);
         
         // Save project
-        const projectId = saveProject(projectData);
+        const projectId = await saveProject(projectData);
         
         console.log('✅ Project saved with ID:', projectId);
         
         // Close modal and reload list
         closeProjectEditModal();
-        loadProjectsList();
+        await loadProjectsList();
         
         alert('✅ Project saved successfully!');
     } catch (error) {
@@ -1108,29 +1108,29 @@ async function handleProjectSubmit(e) {
 }
 
 // Edit project
-function editProject(projectId) {
-    openProjectEditModal(projectId);
+async function editProject(projectId) {
+    await openProjectEditModal(projectId);
 }
 
 // Confirm delete project
-function confirmDeleteProject(projectId) {
-    const projects = getAllProjects();
+async function confirmDeleteProject(projectId) {
+    const projects = await getAllProjects();
     const project = projects[projectId];
     
     if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
-        deleteProject(projectId);
-        loadProjectsList();
+        await deleteProject(projectId);
+        await loadProjectsList();
         alert('Project deleted successfully!');
     }
 }
 
-// Update the main openProjectModal function to load from localStorage
-function openProjectModal(projectId) {
+// Update the main openProjectModal function to load from cloud storage
+async function openProjectModal(projectId) {
     const modal = document.getElementById('projectModal');
     const modalBody = document.getElementById('modalBody');
     
-    // First try to load from localStorage
-    const storedProjects = getAllProjects();
+    // First try to load from cloud storage
+    const storedProjects = await getAllProjects();
     let project = storedProjects[projectId];
     
     // Fallback to hardcoded data if not found
