@@ -754,6 +754,8 @@ async function saveProject(projectData) {
                 .update(dbData)
                 .eq('id', dbData.id);
         } else {
+            // Delete the undefined/empty id so Postgres can generate the UUID automatically
+            delete dbData.id;
             result = await supabase
                 .from('projects')
                 .insert([dbData]);
