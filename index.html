@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Business - Portfolio & Services</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -159,30 +162,36 @@
         const projectsPerPage = 6;
         let allProjects = [];
         
-        // Load projects from localStorage and update gallery
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Loading projects...');
-            loadAllProjects();
+        // Load projects from Supabase and update gallery
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Fetching projects from Supabase...');
+            await loadAllProjects();
             loadFeaturedProjectsWithPagination();
         });
         
-        // Load all projects into memory
-        function loadAllProjects() {
-            // Get projects from localStorage
-            const storedProjects = localStorage.getItem('businessProjects');
-            if (storedProjects) {
-                const projects = JSON.parse(storedProjects);
-                allProjects = Object.values(projects);
-            } else {
-                // Use default projects (work1-work6)
-                allProjects = [
-                    { id: '1', title: 'Project One', description: 'Custom design and implementation' },
-                    { id: '2', title: 'Project Two', description: 'Premium quality materials' },
-                    { id: '3', title: 'Project Three', description: 'Attention to detail' },
-                    { id: '4', title: 'Project Four', description: 'Client satisfaction guaranteed' },
-                    { id: '5', title: 'Project Five', description: 'Excellence in execution' },
-                    { id: '6', title: 'Project Six', description: 'Professional results' }
-                ];
+        // Load all projects from Supabase memory
+        async function loadAllProjects() {
+            if (!supabase) {
+                console.error('Supabase not detected');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allProjects = data;
+                
+                // If cloud is empty, show a nice message
+                if (allProjects.length === 0) {
+                    console.log('☁️ Supabase is empty, add projects from Admin panel.');
+                }
+            } catch (error) {
+                console.error('❌ Error loading projects from cloud:', error);
+                allProjects = []; // Safe fallback
             }
         }
         

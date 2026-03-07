@@ -36,6 +36,13 @@ let ceilingTilesFiles = [];
 let roofTilesFiles = [];
 let fabricationFiles = [];
 
+// New Storage logic for Supabase
+const pendingImages = {
+    outputImages: [],
+    progressImages: [],
+    materialImages: []
+};
+
 // Login Handler
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -201,30 +208,10 @@ saveWorkImagesBtn.addEventListener('click', () => {
     showInstructions('work', workFiles);
 });
 
-// Save Material Images
-saveMaterialImagesBtn.addEventListener('click', () => {
-    // Load existing materials from localStorage or create new object
-    let materialsData = {
-        ceilingTiles: [],
-        roofTiles: [],
-        fabrication: []
-    };
+// Save Material Images to Cloud
+saveMaterialImagesBtn.addEventListener('click', async () => {
+    if (!supabase) return;
     
-    const existingMaterials = localStorage.getItem('materialCategories');
-    if (existingMaterials) {
-        materialsData = JSON.parse(existingMaterials);
-        console.log('📦 Loading existing materials to append new images...');
-    }
-    
-    // Store the current count for each category
-    const existingCounts = {
-        ceilingTiles: materialsData.ceilingTiles.length,
-        roofTiles: materialsData.roofTiles.length,
-        fabrication: materialsData.fabrication.length
-    };
-    
-    // Convert files to base64 for storage
-    let processedFiles = 0;
     const totalFiles = ceilingTilesFiles.length + roofTilesFiles.length + fabricationFiles.length;
     
     if (totalFiles === 0) {
@@ -232,88 +219,66 @@ saveMaterialImagesBtn.addEventListener('click', () => {
         return;
     }
     
-    // Process ceiling tiles
-    ceilingTilesFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            materialsData.ceilingTiles.push({
-                name: file.name,
-                data: e.target.result,
-                index: index
-            });
-            processedFiles++;
-            checkIfAllProcessed();
+    try {
+        saveMaterialImagesBtn.disabled = true;
+        saveMaterialImagesBtn.textContent = '⏳ Uploading to Cloud...';
+        
+        // 1. Fetch existing materials from cloud to append to
+        const { data: existingData, error: fetchError } = await supabase
+            .from('global_settings')
+            .select('value')
+            .eq('key', 'material_categories')
+            .single();
+            
+        let materialsData = existingData ? existingData.value : {
+            ceilingTiles: [],
+            roofTiles: [],
+            fabrication: []
         };
-        reader.readAsDataURL(file);
-    });
-    
-    // Process roof tiles
-    roofTilesFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            materialsData.roofTiles.push({
-                name: file.name,
-                data: e.target.result,
-                index: index
-            });
-            processedFiles++;
-            checkIfAllProcessed();
-        };
-        reader.readAsDataURL(file);
-    });
-    
-    // Process fabrication materials
-    fabricationFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            materialsData.fabrication.push({
-                name: file.name,
-                data: e.target.result,
-                index: index
-            });
-            processedFiles++;
-            checkIfAllProcessed();
-        };
-        reader.readAsDataURL(file);
-    });
-    
-    function checkIfAllProcessed() {
-        if (processedFiles === totalFiles) {
-            // Save to localStorage
-            localStorage.setItem('materialCategories', JSON.stringify(materialsData));
+        
+        // 2. Upload and get URLs
+        console.log('🏗️ Uploading ceiling tiles...');
+        const ceilingUrls = await Promise.all(
+            ceilingTilesFiles.map(file => uploadToSupabase(file, 'global/ceiling'))
+        );
+        materialsData.ceilingTiles.push(...ceilingUrls.map(url => ({ url, name: 'Ceiling Tile' })));
+        
+        console.log('🏠 Uploading roof tiles...');
+        const roofUrls = await Promise.all(
+            roofTilesFiles.map(file => uploadToSupabase(file, 'global/roof'))
+        );
+        materialsData.roofTiles.push(...roofUrls.map(url => ({ url, name: 'Roof Tile' })));
+        
+        console.log('🔧 Uploading fabrication materials...');
+        const fabricationUrls = await Promise.all(
+            fabricationFiles.map(file => uploadToSupabase(file, 'global/fabrication'))
+        );
+        materialsData.fabrication.push(...fabricationUrls.map(url => ({ url, name: 'Fabrication Material' })));
+        
+        // 3. Save back to database
+        const { error: saveError } = await supabase
+            .from('global_settings')
+            .upsert({ key: 'material_categories', value: materialsData });
             
-            const newCounts = {
-                ceilingTiles: materialsData.ceilingTiles.length - existingCounts.ceilingTiles,
-                roofTiles: materialsData.roofTiles.length - existingCounts.roofTiles,
-                fabrication: materialsData.fabrication.length - existingCounts.fabrication
-            };
-            
-            alert(`✅ Successfully added ${totalFiles} new material images!\n\n` +
-                  `NEW IMAGES:\n` +
-                  `- Ceiling Tiles: +${newCounts.ceilingTiles}\n` +
-                  `- Roof Tiles: +${newCounts.roofTiles}\n` +
-                  `- Fabrication: +${newCounts.fabrication}\n\n` +
-                  `TOTAL IMAGES:\n` +
-                  `- Ceiling Tiles: ${materialsData.ceilingTiles.length}\n` +
-                  `- Roof Tiles: ${materialsData.roofTiles.length}\n` +
-                  `- Fabrication: ${materialsData.fabrication.length}\n\n` +
-                  `Refresh your main website to see all materials!`);
-            
-            // Clear the file inputs and arrays
-            ceilingTilesFiles = [];
-            roofTilesFiles = [];
-            fabricationFiles = [];
-            ceilingTilesPreview.innerHTML = '';
-            roofTilesPreview.innerHTML = '';
-            fabricationPreview.innerHTML = '';
-            ceilingTilesInput.value = '';
-            roofTilesInput.value = '';
-            fabricationInput.value = '';
-            updateMaterialSaveButton();
-            
-            // Update counts
-            loadImageCounts();
-        }
+        if (saveError) throw saveError;
+        
+        alert(`✅ Successfully uploaded ${totalFiles} images to the cloud!`);
+        
+        // Clear inputs
+        ceilingTilesFiles = []; roofTilesFiles = []; fabricationFiles = [];
+        ceilingTilesPreview.innerHTML = ''; roofTilesPreview.innerHTML = ''; fabricationPreview.innerHTML = '';
+        if (ceilingTilesInput) ceilingTilesInput.value = '';
+        if (roofTilesInput) roofTilesInput.value = '';
+        if (fabricationInput) fabricationInput.value = '';
+        updateMaterialSaveButton();
+        loadImageCounts();
+        
+    } catch (error) {
+        console.error('❌ Cloud Material Upload Error:', error);
+        alert('❌ Error uploading materials: ' + error.message);
+    } finally {
+        saveMaterialImagesBtn.disabled = false;
+        saveMaterialImagesBtn.textContent = 'Save All Material Images';
     }
 });
 
@@ -686,53 +651,129 @@ document.addEventListener('keydown', function(event) {
 // ADMIN PROJECT MANAGEMENT SYSTEM
 // =========================================
 
-// Initialize projects storage
+// Initialize projects storage (No longer needed for LocalStorage, but keeping for compatibility)
 function initProjectsStorage() {
-    if (!localStorage.getItem('businessProjects')) {
-        localStorage.setItem('businessProjects', JSON.stringify({}));
+    console.log('☁️ Using Supabase storage instead of LocalStorage');
+}
+
+// Get all projects from Supabase
+async function getAllProjects() {
+    if (!supabase) return {};
+    
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        // Convert array to object format for compatibility with existing code
+        const projectsObj = {};
+        data.forEach(p => { projectsObj[p.id] = p; });
+        return projectsObj;
+    } catch (error) {
+        console.error('❌ Error fetching projects from Supabase:', error);
+        return {};
     }
 }
 
-// Get all projects
-function getAllProjects() {
-    const projects = localStorage.getItem('businessProjects');
-    return projects ? JSON.parse(projects) : {};
+// Helper to upload a single image to Supabase Storage
+async function uploadToSupabase(file, folder) {
+    const fileName = `${folder}/${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+        .from('project-images')
+        .upload(fileName, file);
+        
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(fileName);
+        
+    return publicUrl;
 }
 
-// Save project
-function saveProject(projectData) {
+// Save project to Supabase
+async function saveProject(projectData) {
+    if (!supabase) throw new Error('Supabase not connected');
+    
     try {
-        console.log('📦 Getting existing projects...');
-        const projects = getAllProjects();
-        const projectId = projectData.id || Date.now().toString();
-        projectData.id = projectId;
+        console.log('🚀 Uploading new images to Cloud Storage...');
         
-        console.log(`💾 Saving project with ID: ${projectId}`);
-        projects[projectId] = projectData;
+        // 1. Upload new output images
+        const newOutputUrls = await Promise.all(
+            pendingImages.outputImages.map(file => uploadToSupabase(file, 'output'))
+        );
+        projectData.outputImages = [...(projectData.outputImages || []), ...newOutputUrls];
         
-        localStorage.setItem('businessProjects', JSON.stringify(projects));
-        console.log('✅ Project saved to localStorage successfully');
+        // 2. Upload new progress images
+        const newProgressUrls = await Promise.all(
+            pendingImages.progressImages.map(file => uploadToSupabase(file, 'progress'))
+        );
+        projectData.progressImages = [...(projectData.progressImages || []), ...newProgressUrls];
         
-        return projectId;
+        // 3. Upload new material images
+        const newMaterialUrls = await Promise.all(
+            pendingImages.materialImages.map(file => uploadToSupabase(file, 'materials'))
+        );
+        projectData.materialImages = [...(projectData.materialImages || []), ...newMaterialUrls];
+
+        console.log('💾 Saving project data to Database...');
+        
+        // Check if updating or inserting
+        const isUpdate = !!document.getElementById('projectId').value;
+        let result;
+        
+        if (isUpdate) {
+            result = await supabase
+                .from('projects')
+                .update(projectData)
+                .eq('id', projectData.id);
+        } else {
+            result = await supabase
+                .from('projects')
+                .insert([projectData]);
+        }
+        
+        if (result.error) throw result.error;
+        
+        // Clear pending images after success
+        pendingImages.outputImages = [];
+        pendingImages.progressImages = [];
+        pendingImages.materialImages = [];
+        
+        return projectData.id;
     } catch (error) {
-        console.error('❌ Error in saveProject:', error);
+        console.error('❌ Error in cloud saveProject:', error);
         throw error;
     }
 }
 
-// Delete project
-function deleteProject(projectId) {
-    const projects = getAllProjects();
-    delete projects[projectId];
-    localStorage.setItem('businessProjects', JSON.stringify(projects));
+// Delete project from Supabase
+async function deleteProject(projectId) {
+    if (!supabase) return;
+    try {
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', projectId);
+            
+        if (error) throw error;
+    } catch (error) {
+        console.error('❌ Error deleting project:', error);
+        throw error;
+    }
 }
 
 // Load projects list
-function loadProjectsList() {
+async function loadProjectsList() {
     const projectsList = document.getElementById('projectsList');
     if (!projectsList) return;
     
-    const projects = getAllProjects();
+    projectsList.innerHTML = '<div class="loading">⏳ Fetching your projects from the cloud...</div>';
+    
+    const projects = await getAllProjects();
     const projectsArray = Object.values(projects);
     
     if (projectsArray.length === 0) {
@@ -797,10 +838,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load projects when the tab is active
+    // Load projects when the tab is active
     const manageProjectsTab = document.querySelector('[data-tab="manage-projects"]');
     if (manageProjectsTab) {
-        manageProjectsTab.addEventListener('click', function() {
-            loadProjectsList();
+        manageProjectsTab.addEventListener('click', async function() {
+            await loadProjectsList();
         });
         // Load initially if it's the active tab
         if (manageProjectsTab.classList.contains('active')) {
@@ -934,17 +976,27 @@ function setupImagePreview(inputId, previewId) {
         
         files.forEach(file => {
             if (file.type.startsWith('image/')) {
+                // Store the file object for later upload
+                if (inputId === 'outputImages') pendingImages.outputImages.push(file);
+                if (inputId === 'progressImages') pendingImages.progressImages.push(file);
+                if (inputId === 'materialImages') pendingImages.materialImages.push(file);
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const div = document.createElement('div');
                     div.className = 'image-preview-item';
                     div.innerHTML = `
                         <img src="${e.target.result}" alt="${file.name}">
-                        <button type="button" class="remove-image">&times;</button>
+                        <button type="button" class="remove-image" data-name="${file.name}">&times;</button>
                         <p class="image-name">${file.name}</p>
                     `;
                     
                     div.querySelector('.remove-image').addEventListener('click', function() {
+                        const name = this.getAttribute('data-name');
+                        // Remove from pending list
+                        if (inputId === 'outputImages') pendingImages.outputImages = pendingImages.outputImages.filter(f => f.name !== name);
+                        if (inputId === 'progressImages') pendingImages.progressImages = pendingImages.progressImages.filter(f => f.name !== name);
+                        if (inputId === 'materialImages') pendingImages.materialImages = pendingImages.materialImages.filter(f => f.name !== name);
                         div.remove();
                     });
                     
@@ -989,13 +1041,13 @@ function clearMaterialRows() {
     }
 }
 
-// Get images from preview
-function getImagesFromPreview(previewId) {
+// Get existing image URLs from preview (those already in Supabase)
+function getExistingImagesFromPreview(previewId) {
     const preview = document.getElementById(previewId);
     if (!preview) return [];
     
     const images = [];
-    preview.querySelectorAll('.image-preview-item img').forEach(img => {
+    preview.querySelectorAll('.image-preview-item[data-existing="true"] img').forEach(img => {
         images.push(img.src);
     });
     return images;
@@ -1008,7 +1060,7 @@ async function handleProjectSubmit(e) {
     
     try {
         const projectData = {
-            id: document.getElementById('projectId').value || Date.now().toString(),
+            id: document.getElementById('projectId').value || undefined, // Use undefined for auto-uuid on insert
             title: document.getElementById('projectTitle').value,
             description: document.getElementById('projectDescription').value,
             completionDate: document.getElementById('projectDate').value,
@@ -1019,9 +1071,9 @@ async function handleProjectSubmit(e) {
                 phone: document.getElementById('ownerPhone').value,
                 email: document.getElementById('ownerEmail').value
             },
-            outputImages: getImagesFromPreview('outputImagesPreview'),
-            progressImages: getImagesFromPreview('progressImagesPreview'),
-            materialImages: getImagesFromPreview('materialImagesPreview'),
+            outputImages: getExistingImagesFromPreview('outputImagesPreview'),
+            progressImages: getExistingImagesFromPreview('progressImagesPreview'),
+            materialImages: getExistingImagesFromPreview('materialImagesPreview'),
             materials: []
         };
         

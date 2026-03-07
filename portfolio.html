@@ -111,20 +111,25 @@
     <script>
         let allProjects = [];
         
-        // Load all projects from localStorage
-        function loadAllProjects() {
-            const storedProjects = localStorage.getItem('businessProjects');
-            if (storedProjects) {
-                const projectsObj = JSON.parse(storedProjects);
-                allProjects = Object.values(projectsObj);
-                console.log(`✅ Loaded ${allProjects.length} project(s) from localStorage`);
-            } else {
+        // Load all projects from Supabase
+        async function loadAllProjects() {
+            if (!supabase) return;
+            try {
+                const { data, error } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                allProjects = data;
+                console.log(`✅ Loaded ${allProjects.length} project(s) from cloud`);
+            } catch (error) {
+                console.error('❌ Error fetching from cloud:', error);
                 allProjects = [];
-                console.log('ℹ️ No projects found in localStorage');
             }
         }
 
-        // Load all projects into gallery (no pagination)
+        // Load all projects into gallery
         function loadProjectsGallery() {
             const gallery = document.getElementById('projectsGallery');
             if (!gallery) {
@@ -132,25 +137,16 @@
                 return;
             }
             
-            // Get projects from localStorage
-            const storedProjects = localStorage.getItem('businessProjects');
-            if (!storedProjects) {
-                console.log('ℹ️ No stored projects found, showing default gallery');
-                return; // Keep the default gallery
+            if (allProjects.length === 0) {
+                gallery.innerHTML = '<p style="text-align: center; width: 100%; color: #666; padding: 2rem;">No projects found in the cloud yet. Add them from the admin panel!</p>';
+                console.log('ℹ️ No projects found in the cloud, displaying message.');
+                return;
             }
             
-            const projects = JSON.parse(storedProjects);
-            const projectsArray = Object.values(projects);
-            
-            if (projectsArray.length === 0) {
-                console.log('ℹ️ No projects in storage yet, showing default gallery');
-                return; // Keep default
-            }
-            
-            console.log(`✅ Loading ${projectsArray.length} project(s) from admin panel`);
+            console.log(`✅ Loading ${allProjects.length} project(s) from cloud into gallery`);
             
             // Update gallery with stored projects
-            gallery.innerHTML = projectsArray.map((project, index) => {
+            gallery.innerHTML = allProjects.map((project) => {
                 // Use first output image or first available image
                 let thumbnailUrl = 'https://via.placeholder.com/400x300?text=Project';
                 if (project.outputImages && project.outputImages.length > 0) {
@@ -178,13 +174,13 @@
                 `;
             }).join('');
             
-            console.log('✅ Gallery updated successfully with admin projects');
+            console.log('✅ Gallery updated successfully with cloud projects');
         }
 
         // Load projects when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Loading all projects for portfolio page...');
-            loadAllProjects();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Loading cloud projects for portfolio page...');
+            await loadAllProjects();
             loadProjectsGallery();
         });
     </script>

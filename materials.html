@@ -110,73 +110,84 @@
     </footer>
 
     <script>
-        // Load materials from localStorage
-        function loadMaterialsGallery() {
-            const storedMaterials = localStorage.getItem('materialCategories');
-            if (!storedMaterials) {
-                console.log('ℹ️ No stored materials found, showing default materials');
-                return; // Keep default materials
-            }
+        // Load materials from Supabase
+        async function loadMaterialsGallery() {
+            if (!supabase) return;
             
-            const materials = JSON.parse(storedMaterials);
-            console.log('🔄 Loading materials from admin panel...');
-            
-            // Load Ceiling Tiles
-            if (materials.ceilingTiles && materials.ceilingTiles.length > 0) {
-                const ceilingGallery = document.getElementById('ceilingTilesGallery');
-                if (ceilingGallery) {
-                    ceilingGallery.innerHTML = materials.ceilingTiles.map((item, index) => `
-                        <div class="gallery-item">
-                            <img src="${item.data}" alt="Ceiling Tile ${index + 1}">
-                            <div class="gallery-caption">
-                                <h3>Ceiling Tile ${index + 1}</h3>
-                                <p>${item.name}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                    console.log(`✅ Loaded ${materials.ceilingTiles.length} ceiling tile images`);
+            try {
+                console.log('🔄 Loading cloud materials...');
+                const { data, error } = await supabase
+                    .from('global_settings')
+                    .select('value')
+                    .eq('key', 'material_categories')
+                    .single();
+                    
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        console.log('ℹ️ No cloud materials found yet.');
+                        return;
+                    }
+                    throw error;
                 }
-            }
-            
-            // Load Roof Tiles
-            if (materials.roofTiles && materials.roofTiles.length > 0) {
-                const roofGallery = document.getElementById('roofTilesGallery');
-                if (roofGallery) {
-                    roofGallery.innerHTML = materials.roofTiles.map((item, index) => `
-                        <div class="gallery-item">
-                            <img src="${item.data}" alt="Roof Tile ${index + 1}">
-                            <div class="gallery-caption">
-                                <h3>Roof Tile ${index + 1}</h3>
-                                <p>${item.name}</p>
+                
+                const materials = data.value;
+                
+                // Load Ceiling Tiles
+                if (materials.ceilingTiles && materials.ceilingTiles.length > 0) {
+                    const ceilingGallery = document.getElementById('ceilingTilesGallery');
+                    if (ceilingGallery) {
+                        ceilingGallery.innerHTML = materials.ceilingTiles.map((item, index) => `
+                            <div class="gallery-item">
+                                <img src="${item.url}" alt="Ceiling Tile ${index + 1}">
+                                <div class="gallery-caption">
+                                    <h3>Ceiling Tile ${index + 1}</h3>
+                                    <p>${item.name || 'Premium Material'}</p>
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
-                    console.log(`✅ Loaded ${materials.roofTiles.length} roof tile images`);
+                        `).join('');
+                    }
                 }
-            }
-            
-            // Load Fabrication Materials
-            if (materials.fabrication && materials.fabrication.length > 0) {
-                const fabricationGallery = document.getElementById('fabricationGallery');
-                if (fabricationGallery) {
-                    fabricationGallery.innerHTML = materials.fabrication.map((item, index) => `
-                        <div class="gallery-item">
-                            <img src="${item.data}" alt="Fabrication Material ${index + 1}">
-                            <div class="gallery-caption">
-                                <h3>Fabrication Material ${index + 1}</h3>
-                                <p>${item.name}</p>
+                
+                // Load Roof Tiles
+                if (materials.roofTiles && materials.roofTiles.length > 0) {
+                    const roofGallery = document.getElementById('roofTilesGallery');
+                    if (roofGallery) {
+                        roofGallery.innerHTML = materials.roofTiles.map((item, index) => `
+                            <div class="gallery-item">
+                                <img src="${item.url}" alt="Roof Tile ${index + 1}">
+                                <div class="gallery-caption">
+                                    <h3>Roof Tile ${index + 1}</h3>
+                                    <p>${item.name || 'Premium Material'}</p>
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
-                    console.log(`✅ Loaded ${materials.fabrication.length} fabrication material images`);
+                        `).join('');
+                    }
                 }
+                
+                // Load Fabrication Materials
+                if (materials.fabrication && materials.fabrication.length > 0) {
+                    const fabricationGallery = document.getElementById('fabricationGallery');
+                    if (fabricationGallery) {
+                        fabricationGallery.innerHTML = materials.fabrication.map((item, index) => `
+                            <div class="gallery-item">
+                                <img src="${item.url}" alt="Fabrication Material ${index + 1}">
+                                <div class="gallery-caption">
+                                    <h3>Fabrication Material ${index + 1}</h3>
+                                    <p>${item.name || 'Premium Material'}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading materials from cloud:', error);
             }
         }
 
         // Load materials when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Loading all materials...');
-            loadMaterialsGallery();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔄 Initializing materials page from cloud...');
+            await loadMaterialsGallery();
         });
     </script>
 </body>
