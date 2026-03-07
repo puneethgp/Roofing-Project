@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Work - My Business</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">My Business</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="portfolio.html" class="nav-link active">Our Work</a></li>
+                <li><a href="materials.html" class="nav-link">Raw Materials</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Portfolio Header -->
+    <section class="portfolio-header">
+        <div class="container">
+            <h1>Our Work</h1>
+            <p class="section-description">Explore all our completed projects and see the quality of our craftsmanship</p>
+        </div>
+    </section>
+
+    <!-- All Projects Gallery -->
+    <section class="portfolio-section">
+        <div class="container">
+            <div class="gallery" id="projectsGallery">
+                <!-- Default projects - will be replaced by admin projects -->
+                <div class="gallery-item" onclick="openProjectModal('default-1')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+1" alt="Project 1">
+                    <div class="gallery-caption">
+                        <h3>Project Title 1</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" onclick="openProjectModal('default-2')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+2" alt="Project 2">
+                    <div class="gallery-caption">
+                        <h3>Project Title 2</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" onclick="openProjectModal('default-3')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+3" alt="Project 3">
+                    <div class="gallery-caption">
+                        <h3>Project Title 3</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" onclick="openProjectModal('default-4')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+4" alt="Project 4">
+                    <div class="gallery-caption">
+                        <h3>Project Title 4</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" onclick="openProjectModal('default-5')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+5" alt="Project 5">
+                    <div class="gallery-caption">
+                        <h3>Project Title 5</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+                
+                <div class="gallery-item" onclick="openProjectModal('default-6')">
+                    <img src="https://via.placeholder.com/400x300?text=Project+6" alt="Project 6">
+                    <div class="gallery-caption">
+                        <h3>Project Title 6</h3>
+                        <p>Brief description of the project</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 My Business. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProjectModal()">&times;</span>
+            <div id="modalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        let allProjects = [];
+        
+        // Load all projects from localStorage
+        function loadAllProjects() {
+            const storedProjects = localStorage.getItem('businessProjects');
+            if (storedProjects) {
+                const projectsObj = JSON.parse(storedProjects);
+                allProjects = Object.values(projectsObj);
+                console.log(`✅ Loaded ${allProjects.length} project(s) from localStorage`);
+            } else {
+                allProjects = [];
+                console.log('ℹ️ No projects found in localStorage');
+            }
+        }
+
+        // Load all projects into gallery (no pagination)
+        function loadProjectsGallery() {
+            const gallery = document.getElementById('projectsGallery');
+            if (!gallery) {
+                console.error('❌ Gallery element not found');
+                return;
+            }
+            
+            // Get projects from localStorage
+            const storedProjects = localStorage.getItem('businessProjects');
+            if (!storedProjects) {
+                console.log('ℹ️ No stored projects found, showing default gallery');
+                return; // Keep the default gallery
+            }
+            
+            const projects = JSON.parse(storedProjects);
+            const projectsArray = Object.values(projects);
+            
+            if (projectsArray.length === 0) {
+                console.log('ℹ️ No projects in storage yet, showing default gallery');
+                return; // Keep default
+            }
+            
+            console.log(`✅ Loading ${projectsArray.length} project(s) from admin panel`);
+            
+            // Update gallery with stored projects
+            gallery.innerHTML = projectsArray.map((project, index) => {
+                // Use first output image or first available image
+                let thumbnailUrl = 'https://via.placeholder.com/400x300?text=Project';
+                if (project.outputImages && project.outputImages.length > 0) {
+                    thumbnailUrl = project.outputImages[0];
+                } else if (project.progressImages && project.progressImages.length > 0) {
+                    thumbnailUrl = project.progressImages[0];
+                } else if (project.materialImages && project.materialImages.length > 0) {
+                    thumbnailUrl = project.materialImages[0];
+                }
+                
+                // Truncate description for display
+                const shortDesc = project.description ? 
+                    (project.description.length > 60 ? project.description.substring(0, 60) + '...' : project.description) : 
+                    'Click to view details';
+                
+                return `
+                    <div class="gallery-item" onclick="openProjectModal('${project.id}')">
+                        <img src="${thumbnailUrl}" alt="${project.title}" onerror="this.src='https://via.placeholder.com/400x300?text=Project'">
+                        <div class="gallery-caption">
+                            <h3>${project.title}</h3>
+                            <p>${shortDesc}</p>
+                            <span class="view-details">Click to view details →</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log('✅ Gallery updated successfully with admin projects');
+        }
+
+        // Load projects when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Loading all projects for portfolio page...');
+            loadAllProjects();
+            loadProjectsGallery();
+        });
+    </script>
+</body>
+</html>

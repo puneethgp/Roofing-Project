@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw Materials - My Business</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">My Business</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="portfolio.html" class="nav-link">Our Work</a></li>
+                <li><a href="materials.html" class="nav-link active">Raw Materials</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Materials Header -->
+    <section class="materials-header">
+        <div class="container">
+            <h1>Raw Materials</h1>
+            <p class="section-description">Explore our comprehensive selection of premium quality materials</p>
+        </div>
+    </section>
+
+    <!-- All Materials Section -->
+    <section class="materials-section">
+        <div class="container">
+            <!-- Ceiling Tiles -->
+            <div class="material-category">
+                <h2 class="category-title">🏗️ Ceiling Tiles</h2>
+                <p class="category-description">Premium acoustic and decorative ceiling tiles for all types of projects</p>
+                <div class="gallery" id="ceilingTilesGallery">
+                    <!-- Default ceiling tiles - will be replaced by admin materials -->
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Ceiling+Tile" alt="Ceiling Tile">
+                        <div class="gallery-caption">
+                            <h3>Premium Ceiling Tiles</h3>
+                            <p>Acoustic and decorative options</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Ceiling+Tile" alt="Ceiling Tile">
+                        <div class="gallery-caption">
+                            <h3>Suspended Ceiling Systems</h3>
+                            <p>Professional grade materials</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roof Tiles -->
+            <div class="material-category">
+                <h2 class="category-title">🏠 Roof Tiles</h2>
+                <p class="category-description">Durable and weather-resistant roofing materials for long-lasting protection</p>
+                <div class="gallery" id="roofTilesGallery">
+                    <!-- Default roof tiles - will be replaced by admin materials -->
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Roof+Tile" alt="Roof Tile">
+                        <div class="gallery-caption">
+                            <h3>Clay & Concrete Tiles</h3>
+                            <p>Durable and weather-resistant</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Roof+Tile" alt="Roof Tile">
+                        <div class="gallery-caption">
+                            <h3>Asphalt Shingles</h3>
+                            <p>Premium quality roofing materials</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fabrication Materials -->
+            <div class="material-category">
+                <h2 class="category-title">🔧 Fabrication Materials</h2>
+                <p class="category-description">Custom fabrication materials and structural components for specialized construction</p>
+                <div class="gallery" id="fabricationGallery">
+                    <!-- Default fabrication materials - will be replaced by admin materials -->
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Fabrication" alt="Fabrication Material">
+                        <div class="gallery-caption">
+                            <h3>Metal Sheets & Beams</h3>
+                            <p>Structural fabrication materials</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://via.placeholder.com/400x300?text=Fabrication" alt="Fabrication Material">
+                        <div class="gallery-caption">
+                            <h3>Custom Fabrication</h3>
+                            <p>Specialized construction components</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 My Business. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Load materials from localStorage
+        function loadMaterialsGallery() {
+            const storedMaterials = localStorage.getItem('materialCategories');
+            if (!storedMaterials) {
+                console.log('ℹ️ No stored materials found, showing default materials');
+                return; // Keep default materials
+            }
+            
+            const materials = JSON.parse(storedMaterials);
+            console.log('🔄 Loading materials from admin panel...');
+            
+            // Load Ceiling Tiles
+            if (materials.ceilingTiles && materials.ceilingTiles.length > 0) {
+                const ceilingGallery = document.getElementById('ceilingTilesGallery');
+                if (ceilingGallery) {
+                    ceilingGallery.innerHTML = materials.ceilingTiles.map((item, index) => `
+                        <div class="gallery-item">
+                            <img src="${item.data}" alt="Ceiling Tile ${index + 1}">
+                            <div class="gallery-caption">
+                                <h3>Ceiling Tile ${index + 1}</h3>
+                                <p>${item.name}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    console.log(`✅ Loaded ${materials.ceilingTiles.length} ceiling tile images`);
+                }
+            }
+            
+            // Load Roof Tiles
+            if (materials.roofTiles && materials.roofTiles.length > 0) {
+                const roofGallery = document.getElementById('roofTilesGallery');
+                if (roofGallery) {
+                    roofGallery.innerHTML = materials.roofTiles.map((item, index) => `
+                        <div class="gallery-item">
+                            <img src="${item.data}" alt="Roof Tile ${index + 1}">
+                            <div class="gallery-caption">
+                                <h3>Roof Tile ${index + 1}</h3>
+                                <p>${item.name}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    console.log(`✅ Loaded ${materials.roofTiles.length} roof tile images`);
+                }
+            }
+            
+            // Load Fabrication Materials
+            if (materials.fabrication && materials.fabrication.length > 0) {
+                const fabricationGallery = document.getElementById('fabricationGallery');
+                if (fabricationGallery) {
+                    fabricationGallery.innerHTML = materials.fabrication.map((item, index) => `
+                        <div class="gallery-item">
+                            <img src="${item.data}" alt="Fabrication Material ${index + 1}">
+                            <div class="gallery-caption">
+                                <h3>Fabrication Material ${index + 1}</h3>
+                                <p>${item.name}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    console.log(`✅ Loaded ${materials.fabrication.length} fabrication material images`);
+                }
+            }
+        }
+
+        // Load materials when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Loading all materials...');
+            loadMaterialsGallery();
+        });
+    </script>
+</body>
+</html>

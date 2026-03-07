@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - My Business</title>
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-container">
+        <div class="login-box">
+            <h1>🔐 Admin Login</h1>
+            <p>Enter your password to access the admin panel</p>
+            <form id="loginForm">
+                <input type="password" id="passwordInput" placeholder="Enter Admin Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <p class="hint">Default password: <code>admin123</code> (Change this in the code)</p>
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="dashboard" style="display: none;">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>📊 Admin Dashboard</h1>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-nav">
+            <button class="tab-btn active" data-tab="manage-projects">Manage Projects</button>
+            <button class="tab-btn" data-tab="upload-work">Upload Work Images</button>
+            <button class="tab-btn" data-tab="upload-materials">Upload Materials</button>
+            <button class="tab-btn" data-tab="manage-content">Manage Content</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Manage Projects -->
+            <div id="manage-projects" class="tab-pane active">
+                <div class="page-header">
+                    <h2>📁 Manage Projects</h2>
+                    <button id="addNewProjectBtn" class="primary-btn">+ Add New Project</button>
+                </div>
+                
+                <div id="projectsList" class="projects-list">
+                    <!-- Projects will be loaded here dynamically -->
+                </div>
+            </div>
+
+            <!-- Upload Work Images -->
+            <div id="upload-work" class="tab-pane">
+                <h2>Upload Work Portfolio Images</h2>
+                <p class="description">Upload images of your completed projects (work1.jpg through work6.jpg)</p>
+                
+                <div class="upload-section">
+                    <div class="upload-box">
+                        <input type="file" id="workFiles" accept="image/*" multiple>
+                        <label for="workFiles" class="upload-label">
+                            <div class="upload-icon">📸</div>
+                            <p>Click to browse or drag and drop images here</p>
+                            <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
+                        </label>
+                    </div>
+                    
+                    <div id="workPreview" class="preview-grid"></div>
+                    <button id="saveWorkImages" class="save-btn" style="display: none;">Save Work Images</button>
+                </div>
+            </div>
+
+            <!-- Upload Materials -->
+            <div id="upload-materials" class="tab-pane">
+                <h2>Upload Raw Materials Images</h2>
+                <p class="description">Upload images of your raw materials organized by category</p>
+                
+                <!-- Ceiling Tiles -->
+                <div class="upload-section material-upload-category">
+                    <h3>🏗️ Ceiling Tiles</h3>
+                    <div class="upload-box">
+                        <input type="file" id="ceilingTilesFiles" accept="image/*" multiple>
+                        <label for="ceilingTilesFiles" class="upload-label">
+                            <div class="upload-icon">📦</div>
+                            <p>Upload Ceiling Tiles Images</p>
+                            <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
+                        </label>
+                    </div>
+                    <div id="ceilingTilesPreview" class="preview-grid"></div>
+                </div>
+                
+                <!-- Roof Tiles -->
+                <div class="upload-section material-upload-category">
+                    <h3>🏠 Roof Tiles</h3>
+                    <div class="upload-box">
+                        <input type="file" id="roofTilesFiles" accept="image/*" multiple>
+                        <label for="roofTilesFiles" class="upload-label">
+                            <div class="upload-icon">🏘️</div>
+                            <p>Upload Roof Tiles Images</p>
+                            <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
+                        </label>
+                    </div>
+                    <div id="roofTilesPreview" class="preview-grid"></div>
+                </div>
+                
+                <!-- Fabrication Materials -->
+                <div class="upload-section material-upload-category">
+                    <h3>🔧 Fabrication Materials</h3>
+                    <div class="upload-box">
+                        <input type="file" id="fabricationFiles" accept="image/*" multiple>
+                        <label for="fabricationFiles" class="upload-label">
+                            <div class="upload-icon">🛠️</div>
+                            <p>Upload Fabrication Materials Images</p>
+                            <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
+                        </label>
+                    </div>
+                    <div id="fabricationPreview" class="preview-grid"></div>
+                </div>
+                
+                <button id="saveMaterialImages" class="save-btn">Save All Material Images</button>
+            </div>
+
+            <!-- Manage Content -->
+            <div id="manage-content" class="tab-pane">
+                <h2>Manage Website Content</h2>
+                
+                <div class="content-section">
+                    <h3>Business Information</h3>
+                    <div class="form-group">
+                        <label>Business Name:</label>
+                        <input type="text" id="businessName" placeholder="My Business">
+                    </div>
+                    <div class="form-group">
+                        <label>Tagline:</label>
+                        <input type="text" id="tagline" placeholder="Quality craftsmanship and premium materials">
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h3>Contact Information</h3>
+                    <div class="form-group">
+                        <label>Address:</label>
+                        <textarea id="address" rows="2">123 Business Street, City, State 12345</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="email" placeholder="info@mybusiness.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone:</label>
+                        <input type="tel" id="phone" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label>Business Hours:</label>
+                        <textarea id="hours" rows="3">Monday - Friday: 9:00 AM - 6:00 PM
+Saturday: 10:00 AM - 4:00 PM
+Sunday: Closed</textarea>
+                    </div>
+                </div>
+
+                <button class="save-btn">Save Changes</button>
+                <p class="note">Note: To apply these changes, you'll need to manually update the index.html file or implement a backend system.</p>
+            </div>
+
+            <!-- Settings -->
+            <div id="settings" class="tab-pane">
+                <h2>Admin Settings</h2>
+                
+                <div class="content-section">
+                    <h3>Change Admin Password</h3>
+                    <div class="form-group">
+                        <label>Current Password:</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password:</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password:</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    </div>
+                    <button id="changePasswordBtn" class="save-btn">Change Password</button>
+                </div>
+
+                <div class="content-section">
+                    <h3>Current Uploaded Images</h3>
+                    <div class="stats">
+                        <div class="stat-box">
+                            <h4>Work Images</h4>
+                            <p id="workCount">0 images</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Material Images</h4>
+                            <p id="materialCount">0 images</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Edit Modal -->
+    <div id="projectEditModal" class="project-modal" style="display: none;">
+        <div class="project-modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Project</h2>
+                <span class="modal-close" onclick="closeProjectEditModal()">&times;</span>
+            </div>
+            
+            <form id="projectForm" class="project-form">
+                <input type="hidden" id="projectId" value="">
+                
+                <div class="form-section">
+                    <h3>Project Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="projectTitle">Project Title *</label>
+                        <input type="text" id="projectTitle" placeholder="e.g., Residential Roofing - Modern Villa" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectDescription">Description *</label>
+                        <textarea id="projectDescription" rows="3" placeholder="Brief description of the project" required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="projectDate">Completion Date</label>
+                            <input type="text" id="projectDate" placeholder="e.g., December 2025">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="projectDuration">Duration</label>
+                            <input type="text" id="projectDuration" placeholder="e.g., 3 weeks">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Project Location</h3>
+                    
+                    <div class="form-group">
+                        <label for="projectAddress">Address *</label>
+                        <textarea id="projectAddress" rows="2" placeholder="Complete project address" required></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Owner Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="ownerName">Owner Name *</label>
+                        <input type="text" id="ownerName" placeholder="e.g., John & Sarah Anderson" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ownerPhone">Phone</label>
+                            <input type="tel" id="ownerPhone" placeholder="(555) 123-4567">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ownerEmail">Email</label>
+                            <input type="email" id="ownerEmail" placeholder="owner@email.com">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>📸 Project Images</h3>
+                    
+                    <div class="image-upload-section">
+                        <label class="upload-category">Final/Output Images</label>
+                        <input type="file" id="outputImages" accept="image/*" multiple class="file-input">
+                        <div id="outputImagesPreview" class="images-preview"></div>
+                    </div>
+                    
+                    <div class="image-upload-section">
+                        <label class="upload-category">In-Progress Images</label>
+                        <input type="file" id="progressImages" accept="image/*" multiple class="file-input">
+                        <div id="progressImagesPreview" class="images-preview"></div>
+                    </div>
+                    
+                    <div class="image-upload-section">
+                        <label class="upload-category">Material Images</label>
+                        <input type="file" id="materialImages" accept="image/*" multiple class="file-input">
+                        <div id="materialImagesPreview" class="images-preview"></div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>🔨 Raw Materials Used</h3>
+                    <div id="materialsList">
+                        <!-- Materials will be added here -->
+                    </div>
+                    <button type="button" id="addMaterialBtn" class="secondary-btn">+ Add Material</button>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" onclick="closeProjectEditModal()" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="save-btn">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>

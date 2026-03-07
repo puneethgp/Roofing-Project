@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Business - Portfolio & Services</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">My Business</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="portfolio.html" class="nav-link">Our Work</a></li>
+                <li><a href="materials.html" class="nav-link">Raw Materials</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Irfaaz Roofing</h1>
+            <p>Quality craftsmanship and premium materials</p>
+        </div>
+    </section>
+
+    <!-- Featured Projects Section (Home Page) -->
+    <section class="featured-projects">
+        <div class="container">
+            <h2>Featured Projects</h2>
+            <p class="section-description">Browse our latest completed projects</p>
+            
+            <!-- Featured Gallery - Max 6 projects -->
+            <div class="gallery" id="featuredProjectsGallery">
+                <!-- Projects will be loaded here with pagination -->
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div class="pagination-controls">
+                <button id="prevPageBtn" class="pagination-btn" onclick="changePage(-1)">← Previous</button>
+                <div id="pageNumbers" class="page-numbers"></div>
+                <button id="nextPageBtn" class="pagination-btn" onclick="changePage(1)">Next →</button>
+            </div>
+            
+            <div class="view-all-container">
+                <a href="portfolio.html" class="view-all-btn">View All Projects →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Raw Materials Preview Section -->
+    <section id="materials" class="materials-preview">
+        <div class="container">
+            <h2>Raw Materials</h2>
+            <p class="section-description">We use only the finest quality materials for all our projects</p>
+            
+            <div class="materials-preview-grid">
+                <div class="material-preview-card">
+                    <div class="material-icon">🏗️</div>
+                    <h3>Ceiling Tiles</h3>
+                    <p>Premium acoustic and decorative ceiling tiles</p>
+                </div>
+                
+                <div class="material-preview-card">
+                    <div class="material-icon">🏠</div>
+                    <h3>Roof Tiles</h3>
+                    <p>Durable and weather-resistant roofing materials</p>
+                </div>
+                
+                <div class="material-preview-card">
+                    <div class="material-icon">🔧</div>
+                    <h3>Fabrication Materials</h3>
+                    <p>Custom fabrication and structural components</p>
+                </div>
+            </div>
+            
+            <div class="view-all-container">
+                <a href="materials.html" class="view-all-btn">View All Materials →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <p class="section-description">Get in touch with us for your next project</p>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <h3>📍 Address</h3>
+                        <p>Sakleshpura<br>Karnataka, India 573134</p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h3>📧 Email</h3>
+                        <p><a href="mailto:puneethgp18@gmail.com">puneethgp18@gmail.com</a></p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h3>📱 Phone</h3>
+                        <p><a href="tel:+918296634105">+91 82966 34105</a></p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h3>🕐 Business Hours</h3>
+                        <p>Monday - Friday: 9:00 AM - 6:00 PM<br>
+                        Saturday: 10:00 AM - 4:00 PM<br>
+                        Sunday: Closed</p>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" placeholder="Your Phone">
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Your Message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 My Business. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProjectModal()">&times;</span>
+            <div id="modalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pagination variables
+        let currentPage = 1;
+        const projectsPerPage = 6;
+        let allProjects = [];
+        
+        // Load projects from localStorage and update gallery
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Loading projects...');
+            loadAllProjects();
+            loadFeaturedProjectsWithPagination();
+        });
+        
+        // Load all projects into memory
+        function loadAllProjects() {
+            // Get projects from localStorage
+            const storedProjects = localStorage.getItem('businessProjects');
+            if (storedProjects) {
+                const projects = JSON.parse(storedProjects);
+                allProjects = Object.values(projects);
+            } else {
+                // Use default projects (work1-work6)
+                allProjects = [
+                    { id: '1', title: 'Project One', description: 'Custom design and implementation' },
+                    { id: '2', title: 'Project Two', description: 'Premium quality materials' },
+                    { id: '3', title: 'Project Three', description: 'Attention to detail' },
+                    { id: '4', title: 'Project Four', description: 'Client satisfaction guaranteed' },
+                    { id: '5', title: 'Project Five', description: 'Excellence in execution' },
+                    { id: '6', title: 'Project Six', description: 'Professional results' }
+                ];
+            }
+        }
+        
+        // Load featured projects with pagination (Home page)
+        function loadFeaturedProjectsWithPagination() {
+            const gallery = document.getElementById('featuredProjectsGallery');
+            if (!gallery) return;
+            
+            if (allProjects.length === 0) {
+                gallery.innerHTML = '<p style="text-align: center; color: #666;">No projects available yet. Add projects from the admin panel!</p>';
+                return;
+            }
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(allProjects.length / projectsPerPage);
+            const startIndex = (currentPage - 1) * projectsPerPage;
+            const endIndex = startIndex + projectsPerPage;
+            const projectsToShow = allProjects.slice(startIndex, endIndex);
+            
+            // Display projects
+            gallery.innerHTML = projectsToShow.map(project => createProjectCard(project)).join('');
+            
+            // Update pagination controls
+            updatePaginationControls(totalPages);
+            
+            console.log(`✅ Loaded page ${currentPage} of ${totalPages} (${projectsToShow.length} projects)`);
+        }
+        
+        // Create project card HTML
+        function createProjectCard(project) {
+            let thumbnailUrl = 'https://via.placeholder.com/400x300?text=Project';
+            
+            if (project.outputImages && project.outputImages.length > 0) {
+                thumbnailUrl = project.outputImages[0];
+            } else if (project.progressImages && project.progressImages.length > 0) {
+                thumbnailUrl = project.progressImages[0];
+            } else if (project.materialImages && project.materialImages.length > 0) {
+                thumbnailUrl = project.materialImages[0];
+            } else if (project.id) {
+                // Use default work images for numbered projects
+                thumbnailUrl = `images/work${project.id}.jpg`;
+            }
+            
+            const shortDesc = project.description ? 
+                (project.description.length > 60 ? project.description.substring(0, 60) + '...' : project.description) : 
+                'Click to view details';
+            
+            return `
+                <div class="gallery-item" onclick="openProjectModal('${project.id}')">
+                    <img src="${thumbnailUrl}" alt="${project.title}" onerror="this.src='https://via.placeholder.com/400x300?text=Project'">
+                    <div class="gallery-caption">
+                        <h3>${project.title}</h3>
+                        <p>${shortDesc}</p>
+                        <span class="view-details">Click to view details →</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Update pagination controls
+        function updatePaginationControls(totalPages) {
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const pageNumbers = document.getElementById('pageNumbers');
+            
+            if (!prevBtn || !nextBtn || !pageNumbers) return;
+            
+            // Update button states
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            // Update page numbers
+            pageNumbers.innerHTML = '';
+            
+            // Show max 5 page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            // Adjust if we're near the end
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('div');
+                pageBtn.className = `page-number ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(pageBtn);
+            }
+        }
+        
+        // Change page (prev/next)
+        function changePage(direction) {
+            const totalPages = Math.ceil(allProjects.length / projectsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                loadFeaturedProjectsWithPagination();
+                
+                // Scroll to featured projects section
+                document.querySelector('.featured-projects').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // Go to specific page
+        function goToPage(pageNumber) {
+            currentPage = pageNumber;
+            loadFeaturedProjectsWithPagination();
+            
+            // Scroll to featured projects section
+            document.querySelector('.featured-projects').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
