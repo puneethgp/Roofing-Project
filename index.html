@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Business - Portfolio & Services</title>
+    <title>Irfaaz Roofing - Portfolio & Services</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -20,7 +20,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">My Business</div>
+            <div class="logo">Irfaaz Roofing</div>
             <ul class="nav-menu" style="display: flex; align-items: center; gap: 20px;">
                 <li><a href="index.html" class="nav-link">Home</a></li>
                 <li><a href="portfolio.html" class="nav-link">Works</a></li>
@@ -505,26 +505,25 @@
                     const phone = inputs[2].value;
                     const message = inputs[3].value;
 
-                    const { error } = await supabase.from('leads').insert([
-                        { name, email, phone, requirement: message }
-                    ]);
+                    // 📝 Construct the "Correct Details" for WhatsApp
+                    const adminPhone = "918296634105";
+                    const intro = "Hello Irfaaz Roofing, I have a new enquiry from your website:";
+                    const waMessage = `*${intro}*\n\n👤 *Name:* ${name}\n📧 *Email:* ${email || 'N/A'}\n📱 *Phone:* ${phone}\n\n📝 *Requirement:* ${message}`;
+                    const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(waMessage)}`;
 
-                    if (error) {
-                        console.error('Lead submission error:', error);
-                        alert('Error: ' + error.message + '\n\nMake sure to run the SQL from SUPABASE_SETUP.sql in your Supabase dashboard.');
-                    } else {
-                        // Construct WhatsApp message
-                        const adminPhone = "918296634105";
-                        const intro = "Hello Irfaaz Roofing, I have a new enquiry from your website:";
-                        const waMessage = `${intro}\n\n*Name:* ${name}\n*Email:* ${email || 'N/A'}\n*Phone:* ${phone}\n\n*Requirement:* ${message}`;
-                        const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(waMessage)}`;
-                        
-                        form.reset();
-                        alert('Request stored in Admin! Now opening WhatsApp to send your message directly...');
-                        
-                        // Open WhatsApp in a new tab
-                        window.open(waUrl, '_blank');
-                    }
+                    // 🛠️ 1. Save to Supabase (Non-blocking)
+                    supabase.from('leads').insert([
+                        { name, email, phone, requirement: message }
+                    ]).then(({ error }) => {
+                        if (error) console.error('Supabase error:', error);
+                    }).catch(e => console.error('Connection error:', e));
+
+                    // 🏃 2. Clear form and alert user
+                    form.reset();
+                    alert('Redirecting you to chat directly with Irfaaz Roofing on WhatsApp...');
+
+                    // 🚀 3. Open WhatsApp instantly
+                    window.open(waUrl, '_blank');
                 });
             }
         });
