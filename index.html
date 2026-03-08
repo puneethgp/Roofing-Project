@@ -510,7 +510,8 @@
                     ]);
 
                     if (error) {
-                        alert('Error submitting request. Please try WhatsApp directly.');
+                        console.error('Lead submission error:', error);
+                        alert('Error: ' + error.message + '\n\nMake sure to run the SQL from SUPABASE_SETUP.sql in your Supabase dashboard.');
                     } else {
                         form.reset();
                         alert('Request submitted! We will contact you soon.');

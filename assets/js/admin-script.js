@@ -1406,6 +1406,7 @@ async function loadLeadsList() {
         `).join('');
     } catch(e) {
         console.error("Error loading leads", e);
+        leadsList.innerHTML = `<div class="empty-state"><h3 style="color: #ff4d4f;">Error loading leads</h3><p>${e.message}</p></div>`;
     }
 }
 
