@@ -88,10 +88,12 @@ tabBtns.forEach(btn => {
 });
 
 // Work Files Upload
-workFilesInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    handleFileUpload(files, 'work');
-});
+if (workFilesInput) {
+    workFilesInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        handleFileUpload(files, 'work');
+    });
+}
 
 // Material Category Files Upload
 if (ceilingTilesInput) {
@@ -206,11 +208,13 @@ function removeFile(index, type) {
 }
 
 // Save Work Images
-saveWorkImagesBtn.addEventListener('click', () => {
-    if (workFiles.length === 0) return;
-    
-    showInstructions('work', workFiles);
-});
+if (saveWorkImagesBtn) {
+    saveWorkImagesBtn.addEventListener('click', () => {
+        if (workFiles.length === 0) return;
+        
+        showInstructions('work', workFiles);
+    });
+}
 
 // Save Material Images to Cloud
 saveMaterialImagesBtn.addEventListener('click', async () => {
