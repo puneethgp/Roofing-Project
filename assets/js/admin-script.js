@@ -1360,3 +1360,47 @@ async function deleteExistingMaterial(category, index) {
         alert('Failed to delete image: ' + e.message);
     }
 }
+
+async function loadLeadsList() {
+    const leadsList = document.getElementById('leadsList');
+    if (!leadsList || !supabase) return;
+    try {
+        const { data, error } = await supabase.from('leads').select('*').order('created_at', {ascending: false});
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            leadsList.innerHTML = '<div class="empty-state"><h3>No Leads Yet</h3></div>';
+            return;
+        }
+        
+        leadsList.innerHTML = data.map(lead => `
+            <div class="project-card" style="margin-bottom: 15px;">
+                <div class="project-header-card">
+                    <div>
+                        <h3>${lead.name}</h3>
+                        <p class="project-meta">${new Date(lead.created_at).toLocaleString()}</p>
+                    </div>
+                </div>
+                <div class="project-summary" style="display:block;">
+                    <p><strong>Phone:</strong> ${lead.phone}</p>
+                    <p><strong>Email:</strong> ${lead.email}</p>
+                    <p style="margin-top:10px; color:var(--text-muted);"><strong>Requirement:</strong><br>${lead.requirement}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {
+        console.error("Error loading leads", e);
+    }
+}
+
+// Hook leads to tab
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if(btn.getAttribute('data-tab') === 'manage-leads') {
+                loadLeadsList();
+            }
+        });
+    });
+});
