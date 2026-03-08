@@ -513,8 +513,17 @@
                         console.error('Lead submission error:', error);
                         alert('Error: ' + error.message + '\n\nMake sure to run the SQL from SUPABASE_SETUP.sql in your Supabase dashboard.');
                     } else {
+                        // Construct WhatsApp message
+                        const adminPhone = "918296634105";
+                        const intro = "Hello Irfaaz Roofing, I have a new enquiry from your website:";
+                        const waMessage = `${intro}\n\n*Name:* ${name}\n*Email:* ${email || 'N/A'}\n*Phone:* ${phone}\n\n*Requirement:* ${message}`;
+                        const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(waMessage)}`;
+                        
                         form.reset();
-                        alert('Request submitted! We will contact you soon.');
+                        alert('Request stored in Admin! Now opening WhatsApp to send your message directly...');
+                        
+                        // Open WhatsApp in a new tab
+                        window.open(waUrl, '_blank');
                     }
                 });
             }
