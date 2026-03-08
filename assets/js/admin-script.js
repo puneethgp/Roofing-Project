@@ -1374,22 +1374,63 @@ async function loadLeadsList() {
         }
         
         leadsList.innerHTML = data.map(lead => `
-            <div class="project-card" style="margin-bottom: 15px;">
-                <div class="project-header-card">
+            <div class="project-card" style="margin-bottom: 15px; border-left: 5px solid ${getStatusColor(lead.status)}">
+                <div class="project-header-card" style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div>
-                        <h3>${lead.name}</h3>
+                        <h3 style="margin:0;">${lead.name}</h3>
                         <p class="project-meta">${new Date(lead.created_at).toLocaleString()}</p>
                     </div>
+                    <div class="lead-actions" style="display:flex; gap:10px;">
+                        <a href="tel:${lead.phone}" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">📞 Call</a>
+                        <a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px; background:#25D366; color:white; border-color:#25D366;">💬 WhatsApp</a>
+                    </div>
                 </div>
-                <div class="project-summary" style="display:block;">
+                <div class="project-summary" style="display:block; margin-top:15px;">
                     <p><strong>Phone:</strong> ${lead.phone}</p>
-                    <p><strong>Email:</strong> ${lead.email}</p>
+                    <p><strong>Email:</strong> ${lead.email || 'N/A'}</p>
                     <p style="margin-top:10px; color:var(--text-muted);"><strong>Requirement:</strong><br>${lead.requirement}</p>
+                    
+                    <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border); display:flex; align-items:center; gap:15px;">
+                        <span class="label">Update Status:</span>
+                        <select onchange="updateLeadStatus('${lead.id}', this.value)" style="width: auto; margin-bottom: 0; padding: 5px 10px;">
+                            <option value="New" ${lead.status === 'New' ? 'selected' : ''}>New Request</option>
+                            <option value="In Progress" ${lead.status === 'In Progress' ? 'selected' : ''}>In Progress / Ongoing</option>
+                            <option value="Need to Call" ${lead.status === 'Need to Call' ? 'selected' : ''}>Need to Call</option>
+                            <option value="Completed" ${lead.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Cancelled" ${lead.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <span class="status-badge" style="background:${getStatusColor(lead.status)}; color:#111; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600;">${lead.status || 'New'}</span>
+                    </div>
                 </div>
             </div>
         `).join('');
     } catch(e) {
         console.error("Error loading leads", e);
+    }
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'New': return '#ffb020'; // Accent yellow
+        case 'In Progress': return '#3498db'; // Blue
+        case 'Need to Call': return '#e67e22'; // Orange
+        case 'Completed': return '#2ecc71'; // Green
+        case 'Cancelled': return '#e74c3c'; // Red
+        default: return '#ffb020';
+    }
+}
+
+async function updateLeadStatus(id, newStatus) {
+    try {
+        const { error } = await supabase
+            .from('leads')
+            .update({ status: newStatus })
+            .eq('id', id);
+            
+        if (error) throw error;
+        loadLeadsList(); // Refresh
+    } catch (e) {
+        alert('Failed to update status: ' + e.message);
     }
 }
 
