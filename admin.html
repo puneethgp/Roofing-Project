@@ -37,7 +37,7 @@
         <!-- Navigation Tabs -->
         <div class="admin-nav">
             <button class="tab-btn active" data-tab="manage-projects">Manage Projects</button>
-            <button class="tab-btn" data-tab="upload-work">Upload Work Images</button>
+            
             <button class="tab-btn" data-tab="upload-materials">Upload Materials</button>
             <button class="tab-btn" data-tab="manage-content">Manage Content</button>
             <button class="tab-btn" data-tab="settings">Settings</button>
@@ -54,26 +54,6 @@
                 
                 <div id="projectsList" class="projects-list">
                     <!-- Projects will be loaded here dynamically -->
-                </div>
-            </div>
-
-            <!-- Upload Work Images -->
-            <div id="upload-work" class="tab-pane">
-                <h2>Upload Work Portfolio Images</h2>
-                <p class="description">Upload images of your completed projects (work1.jpg through work6.jpg)</p>
-                
-                <div class="upload-section">
-                    <div class="upload-box">
-                        <input type="file" id="workFiles" accept="image/*" multiple>
-                        <label for="workFiles" class="upload-label">
-                            <div class="upload-icon">📸</div>
-                            <p>Click to browse or drag and drop images here</p>
-                            <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
-                        </label>
-                    </div>
-                    
-                    <div id="workPreview" class="preview-grid"></div>
-                    <button id="saveWorkImages" class="save-btn" style="display: none;">Save Work Images</button>
                 </div>
             </div>
 
@@ -94,6 +74,8 @@
                         </label>
                     </div>
                     <div id="ceilingTilesPreview" class="preview-grid"></div>
+                    <h4>Existing Ceiling Tiles</h4>
+                    <div id="existingCeilingTiles" class="existing-grid preview-grid"></div>
                 </div>
                 
                 <!-- Roof Tiles -->
@@ -108,6 +90,8 @@
                         </label>
                     </div>
                     <div id="roofTilesPreview" class="preview-grid"></div>
+                    <h4>Existing Roof Tiles</h4>
+                    <div id="existingRoofTiles" class="existing-grid preview-grid"></div>
                 </div>
                 
                 <!-- Fabrication Materials -->
@@ -122,6 +106,8 @@
                         </label>
                     </div>
                     <div id="fabricationPreview" class="preview-grid"></div>
+                    <h4>Existing Fabrication Materials</h4>
+                    <div id="existingFabrication" class="existing-grid preview-grid"></div>
                 </div>
                 
                 <button id="saveMaterialImages" class="save-btn">Save All Material Images</button>

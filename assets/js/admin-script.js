@@ -80,6 +80,10 @@ tabBtns.forEach(btn => {
         // Add active class to clicked tab
         btn.classList.add('active');
         document.getElementById(targetTab).classList.add('active');
+        
+        if (targetTab === 'upload-materials') {
+            loadExistingMaterials();
+        }
     });
 });
 
@@ -812,12 +816,19 @@ async function loadProjectsList() {
         return;
     }
     
-    projectsList.innerHTML = projectsArray.map(project => `
+    projectsList.innerHTML = projectsArray.map(project => {
+        const previewUrl = (project.outputImages && project.outputImages.length > 0) ? project.outputImages[0] : 
+                           ((project.progressImages && project.progressImages.length > 0) ? project.progressImages[0] : 
+                           ((project.materialImages && project.materialImages.length > 0) ? project.materialImages[0] : 'https://via.placeholder.com/150'));
+        return `
         <div class="project-card">
             <div class="project-header-card">
-                <div>
-                    <h3>${project.title}</h3>
-                    <p class="project-meta">${project.address || 'No address'}</p>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <img src="${previewUrl}" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                    <div>
+                        <h3>${project.title}</h3>
+                        <p class="project-meta">${project.address || 'No address'}</p>
+                    </div>
                 </div>
                 <div class="project-actions">
                     <button class="edit-btn" onclick="editProject('${project.id}')">✏️ Edit</button>
@@ -843,7 +854,7 @@ async function loadProjectsList() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Add new project button
@@ -863,6 +874,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load projects when the tab is active
+    // Load existing materials if tab is active
+    const materialsTab = document.querySelector('[data-tab="upload-materials"]');
+    if (materialsTab && materialsTab.classList.contains('active')) {
+        loadExistingMaterials();
+    }
+
     // Load projects when the tab is active
     const manageProjectsTab = document.querySelector('[data-tab="manage-projects"]');
     if (manageProjectsTab) {
@@ -1262,3 +1279,80 @@ async function openProjectModal(projectId) {
 
 console.log('✅ Project Management System Loaded');
 
+
+
+// Load existing materials
+async function loadExistingMaterials() {
+    if (!supabase) return;
+    try {
+        const { data, error } = await supabase
+            .from('global_settings')
+            .select('value')
+            .eq('key', 'material_categories')
+            .single();
+            
+        if (error && error.code !== 'PGRST116') throw error;
+        
+        let materialsData = data ? data.value : { ceilingTiles: [], roofTiles: [], fabrication: [] };
+        
+        renderExistingMaterials('existingCeilingTiles', materialsData.ceilingTiles || [], 'ceilingTiles');
+        renderExistingMaterials('existingRoofTiles', materialsData.roofTiles || [], 'roofTiles');
+        renderExistingMaterials('existingFabrication', materialsData.fabrication || [], 'fabrication');
+        
+    } catch (e) {
+        console.error("Error loading existing materials:", e);
+    }
+}
+
+function renderExistingMaterials(containerId, items, category) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (items.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px;">No images uploaded yet.</p>';
+        return;
+    }
+    
+    container.innerHTML = items.map((item, idx) => `
+        <div class="preview-item">
+            <img src="${item.url}" alt="${item.name || 'Material image'}">
+            <button class="remove-btn" onclick="deleteExistingMaterial('${category}', ${idx})" title="Delete image">×</button>
+            <div class="preview-info">
+                <p><strong>Name:</strong> ${item.name || 'Material'}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function deleteExistingMaterial(category, index) {
+    if (!confirm('Are you sure you want to delete this material image?')) return;
+    
+    try {
+        const { data, error } = await supabase
+            .from('global_settings')
+            .select('value')
+            .eq('key', 'material_categories')
+            .single();
+            
+        if (error) throw error;
+        
+        let materialsData = data.value;
+        if (materialsData && materialsData[category]) {
+            materialsData[category].splice(index, 1);
+            
+            const { error: updateError } = await supabase
+                .from('global_settings')
+                .update({ value: materialsData })
+                .eq('key', 'material_categories');
+                
+            if (updateError) throw updateError;
+            
+            // Reload
+            loadExistingMaterials();
+            alert('Image deleted successfully!');
+        }
+    } catch (e) {
+        console.error('Error deleting material image:', e);
+        alert('Failed to delete image: ' + e.message);
+    }
+}
