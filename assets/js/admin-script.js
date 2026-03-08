@@ -291,7 +291,7 @@ function showInstructions(type, files) {
     
     const folder = type === 'work' ? 'work portfolio' : 'raw materials';
     
-    alert(`📸 Images Ready to Save!\n\n${files.length} image(s) selected for ${folder}.\n\nInstructions:\n\n1. Manually save these files to the 'images/' folder:\n\n${fileList}\n\n2. Make sure to rename them exactly as shown above.\n\n3. Refresh your main website to see the changes!\n\nNote: Since this is a static website without a backend server, you need to manually copy the files. For automatic uploads, you would need to add a backend server (PHP, Node.js, etc.).`);
+    alert(`📸 Images Ready to Save!\n\n${files.length} image(s) selected for ${folder}.\n\nInstructions:\n\n1. Manually save these files to the 'assets/images/' folder:\n\n${fileList}\n\n2. Make sure to rename them exactly as shown above.\n\n3. Refresh your main website to see the changes!\n\nNote: Since this is a static website without a backend server, you need to manually copy the files. For automatic uploads, you would need to add a backend server (PHP, Node.js, etc.).`);
 }
 
 // Change Password
@@ -407,11 +407,11 @@ const projectsData = {
         title: "Residential Roofing - Modern Villa",
         description: "Complete roof installation for a luxury modern villa with premium materials and exceptional craftsmanship.",
         images: [
-            { url: "images/work1.jpg", caption: "Completed Project", stage: "Final" },
-            { url: "images/work1-stage1.jpg", caption: "Initial Assessment", stage: "Planning" },
-            { url: "images/work1-stage2.jpg", caption: "Foundation Work", stage: "Foundation" },
-            { url: "images/work1-stage3.jpg", caption: "Installation Phase", stage: "Installation" },
-            { url: "images/work1-stage4.jpg", caption: "Finishing Touches", stage: "Finishing" }
+            { url: "assets/images/work1.jpg", caption: "Completed Project", stage: "Final" },
+            { url: "assets/images/work1-stage1.jpg", caption: "Initial Assessment", stage: "Planning" },
+            { url: "assets/images/work1-stage2.jpg", caption: "Foundation Work", stage: "Foundation" },
+            { url: "assets/images/work1-stage3.jpg", caption: "Installation Phase", stage: "Installation" },
+            { url: "assets/images/work1-stage4.jpg", caption: "Finishing Touches", stage: "Finishing" }
         ],
         materials: [
             { name: "Premium Asphalt Shingles", quantity: "30 bundles", supplier: "GAF Materials" },
@@ -432,11 +432,11 @@ const projectsData = {
         title: "Commercial Building - Downtown Office",
         description: "Large-scale commercial roofing project for a 5-story office building in the downtown business district.",
         images: [
-            { url: "images/work2.jpg", caption: "Completed Project", stage: "Final" },
-            { url: "images/work2-stage1.jpg", caption: "Site Inspection", stage: "Planning" },
-            { url: "images/work2-stage2.jpg", caption: "Old Roof Removal", stage: "Demolition" },
-            { url: "images/work2-stage3.jpg", caption: "New Structure Install", stage: "Installation" },
-            { url: "images/work2-stage4.jpg", caption: "Final Inspection", stage: "Finishing" }
+            { url: "assets/images/work2.jpg", caption: "Completed Project", stage: "Final" },
+            { url: "assets/images/work2-stage1.jpg", caption: "Site Inspection", stage: "Planning" },
+            { url: "assets/images/work2-stage2.jpg", caption: "Old Roof Removal", stage: "Demolition" },
+            { url: "assets/images/work2-stage3.jpg", caption: "New Structure Install", stage: "Installation" },
+            { url: "assets/images/work2-stage4.jpg", caption: "Final Inspection", stage: "Finishing" }
         ],
         materials: [
             { name: "TPO Roofing Membrane", quantity: "15,000 sq ft", supplier: "Versico Roofing" },
@@ -457,11 +457,11 @@ const projectsData = {
         title: "Historic Home Restoration",
         description: "Careful restoration of a 1920s historic home roof, maintaining original architectural integrity while upgrading to modern standards.",
         images: [
-            { url: "images/work3.jpg", caption: "Completed Restoration", stage: "Final" },
-            { url: "images/work3-stage1.jpg", caption: "Original Roof Assessment", stage: "Planning" },
-            { url: "images/work3-stage2.jpg", caption: "Careful Demolition", stage: "Demolition" },
-            { url: "images/work3-stage3.jpg", caption: "Custom Installation", stage: "Installation" },
-            { url: "images/work3-stage4.jpg", caption: "Period Details Added", stage: "Finishing" }
+            { url: "assets/images/work3.jpg", caption: "Completed Restoration", stage: "Final" },
+            { url: "assets/images/work3-stage1.jpg", caption: "Original Roof Assessment", stage: "Planning" },
+            { url: "assets/images/work3-stage2.jpg", caption: "Careful Demolition", stage: "Demolition" },
+            { url: "assets/images/work3-stage3.jpg", caption: "Custom Installation", stage: "Installation" },
+            { url: "assets/images/work3-stage4.jpg", caption: "Period Details Added", stage: "Finishing" }
         ],
         materials: [
             { name: "Cedar Shake Shingles", quantity: "45 bundles", supplier: "Heritage Wood Products" },
@@ -482,11 +482,11 @@ const projectsData = {
         title: "Contemporary Flat Roof Design",
         description: "Modern flat roof installation with solar panel integration for an eco-friendly contemporary home.",
         images: [
-            { url: "images/work4.jpg", caption: "Completed Project", stage: "Final" },
-            { url: "images/work4-stage1.jpg", caption: "Design Planning", stage: "Planning" },
-            { url: "images/work4-stage2.jpg", caption: "Membrane Installation", stage: "Installation" },
-            { url: "images/work4-stage3.jpg", caption: "Solar Integration", stage: "Solar" },
-            { url: "images/work4-stage4.jpg", caption: "Final Waterproofing", stage: "Finishing" }
+            { url: "assets/images/work4.jpg", caption: "Completed Project", stage: "Final" },
+            { url: "assets/images/work4-stage1.jpg", caption: "Design Planning", stage: "Planning" },
+            { url: "assets/images/work4-stage2.jpg", caption: "Membrane Installation", stage: "Installation" },
+            { url: "assets/images/work4-stage3.jpg", caption: "Solar Integration", stage: "Solar" },
+            { url: "assets/images/work4-stage4.jpg", caption: "Final Waterproofing", stage: "Finishing" }
         ],
         materials: [
             { name: "EPDM Rubber Membrane", quantity: "3,500 sq ft", supplier: "Firestone Building Products" },
@@ -507,11 +507,11 @@ const projectsData = {
         title: "Multi-Family Housing Complex",
         description: "Complete roofing solution for a 20-unit apartment complex with durability and cost-efficiency in mind.",
         images: [
-            { url: "images/work5.jpg", caption: "Completed Complex", stage: "Final" },
-            { url: "images/work5-stage1.jpg", caption: "Project Kickoff", stage: "Planning" },
-            { url: "images/work5-stage2.jpg", caption: "Structural Prep", stage: "Preparation" },
-            { url: "images/work5-stage3.jpg", caption: "Installation Progress", stage: "Installation" },
-            { url: "images/work5-stage4.jpg", caption: "Quality Check", stage: "Finishing" }
+            { url: "assets/images/work5.jpg", caption: "Completed Complex", stage: "Final" },
+            { url: "assets/images/work5-stage1.jpg", caption: "Project Kickoff", stage: "Planning" },
+            { url: "assets/images/work5-stage2.jpg", caption: "Structural Prep", stage: "Preparation" },
+            { url: "assets/images/work5-stage3.jpg", caption: "Installation Progress", stage: "Installation" },
+            { url: "assets/images/work5-stage4.jpg", caption: "Quality Check", stage: "Finishing" }
         ],
         materials: [
             { name: "Architectural Shingles", quantity: "150 bundles", supplier: "CertainTeed" },
@@ -532,11 +532,11 @@ const projectsData = {
         title: "Luxury Estate - Spanish Tile Roof",
         description: "Premium Spanish tile roof installation for a Mediterranean-style luxury estate with custom color matching.",
         images: [
-            { url: "images/work6.jpg", caption: "Completed Estate", stage: "Final" },
-            { url: "images/work6-stage1.jpg", caption: "Site Survey", stage: "Planning" },
-            { url: "images/work6-stage2.jpg", caption: "Deck Preparation", stage: "Preparation" },
-            { url: "images/work6-stage3.jpg", caption: "Tile Placement", stage: "Installation" },
-            { url: "images/work6-stage4.jpg", caption: "Custom Finishing", stage: "Finishing" }
+            { url: "assets/images/work6.jpg", caption: "Completed Estate", stage: "Final" },
+            { url: "assets/images/work6-stage1.jpg", caption: "Site Survey", stage: "Planning" },
+            { url: "assets/images/work6-stage2.jpg", caption: "Deck Preparation", stage: "Preparation" },
+            { url: "assets/images/work6-stage3.jpg", caption: "Tile Placement", stage: "Installation" },
+            { url: "assets/images/work6-stage4.jpg", caption: "Custom Finishing", stage: "Finishing" }
         ],
         materials: [
             { name: "Spanish Clay Tiles", quantity: "12,000 tiles", supplier: "Boral Roofing" },
