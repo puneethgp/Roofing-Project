@@ -1150,3 +1150,47 @@ select {
   color: var(--text);
   margin-bottom: 20px;
 }
+
+/* Light Mode Theme */
+[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --card: #ffffff;
+  --text: #171a21;
+  --text-muted: #5f6368;
+  --border: #e0e0e0;
+}
+
+[data-theme="light"] h1, 
+[data-theme="light"] h2, 
+[data-theme="light"] h3, 
+[data-theme="light"] h4, 
+[data-theme="light"] h5, 
+[data-theme="light"] h6 {
+  color: #111;
+}
+
+[data-theme="light"] .material-preview-card h3 {
+  color: #111;
+}
+
+[data-theme="light"] .login-btn:hover {
+  background: var(--surface) !important;
+  color: var(--accent) !important;
+}
+
+[data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] select {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #111 !important;
+}
+
+[data-theme="light"] .project-title {
+    color: #111;
+}
+
+[data-theme="light"] body::before {
+  background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
+                    linear-gradient(90deg,#e5e7eb 1px, transparent 1px);
+  opacity: 0.5;
+}

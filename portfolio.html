@@ -14,14 +14,20 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar">
+        <nav class="navbar">
         <div class="nav-container">
             <div class="logo">My Business</div>
-            <ul class="nav-menu">
+            <ul class="nav-menu" style="display: flex; align-items: center; gap: 20px;">
                 <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="portfolio.html" class="nav-link active">Our Work</a></li>
-                <li><a href="materials.html" class="nav-link">Raw Materials</a></li>
+                <li><a href="portfolio.html" class="nav-link">Works</a></li>
                 <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li>
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 5px;">
+                        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        <svg id="sunIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    </button>
+                </li>
+                <li><a href="admin.html" class="nav-link login-btn" style="border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px;">Login</a></li>
             </ul>
         </div>
     </nav>
@@ -205,5 +211,37 @@
         </svg>
     </a>
 
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            const moonIcon = document.getElementById('moonIcon');
+            const sunIcon = document.getElementById('sunIcon');
+            
+            // Check for saved theme
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            if (currentTheme === 'light') {
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+            }
+            
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'block';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    moonIcon.style.display = 'block';
+                    sunIcon.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
