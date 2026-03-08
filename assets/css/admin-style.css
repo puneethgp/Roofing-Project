@@ -911,3 +911,102 @@ body {
         width: 100%;
     }
 }
+
+/* URBAN MINIMALIST OVERRIDES (Admin) */
+:root {
+  --bg: #0f1115;
+  --surface: #171a21;
+  --card: #1e222b;
+  --text: #e6e6e6;
+  --text-muted: #9aa0a6;
+  --accent: #ffb020;
+  --accent-soft: #ffc857;
+  --border: #2a2f3a;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1,h2,h3,h4 {
+  font-family: "Space Grotesk", sans-serif;
+  color: #fff;
+}
+
+.dashboard, .login-container {
+  background: var(--bg);
+}
+
+.login-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.admin-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  color: var(--text-muted);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-pane, .form-section, .upload-section, .project-card, .admin-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.primary-btn, .save-btn, button[type="submit"] {
+  background: var(--accent);
+  color: #111;
+  border: none;
+  border-radius: 6px;
+}
+
+.primary-btn:hover, .save-btn:hover {
+  background: var(--accent-soft);
+}
+
+input, textarea {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--accent) !important;
+}
+
+.project-meta {
+  color: var(--text-muted) !important;
+}
+
+.label {
+  color: var(--text-muted);
+}
+
+.edit-btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.delete-btn {
+  background: transparent;
+  border: 1px solid #ff4d4f;
+  color: #ff4d4f;
+}
