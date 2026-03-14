@@ -53,9 +53,9 @@ loginForm.addEventListener('submit', (e) => {
         loginSection.style.display = 'none';
         adminDashboard.style.display = 'block';
         loginError.textContent = '';
-        loadImageCounts();
+        loadManageContent(); // Load content when logging in
     } else {
-        loginError.textContent = '❌ Invalid password. Please try again.';
+        loginError.textContent = 'Invalid password. Please try again.';
         passwordInput.value = '';
     }
 });
@@ -83,6 +83,12 @@ tabBtns.forEach(btn => {
         
         if (targetTab === 'upload-materials') {
             loadExistingMaterials();
+        } else if (targetTab === 'manage-content') {
+            loadManageContent();
+        } else if (targetTab === 'manage-leads') {
+            loadLeadsList();
+        } else if (targetTab === 'manage-projects') {
+            loadProjectsList();
         }
     });
 });
@@ -217,78 +223,79 @@ if (saveWorkImagesBtn) {
 }
 
 // Save Material Images to Cloud
-saveMaterialImagesBtn.addEventListener('click', async () => {
-    if (!supabase) return;
-    
-    const totalFiles = ceilingTilesFiles.length + roofTilesFiles.length + fabricationFiles.length;
-    
-    if (totalFiles === 0) {
-        alert('Please upload at least one material image in any category!');
-        return;
-    }
-    
-    try {
-        saveMaterialImagesBtn.disabled = true;
-        saveMaterialImagesBtn.textContent = '⏳ Uploading to Cloud...';
+if (saveMaterialImagesBtn) {
+    saveMaterialImagesBtn.addEventListener('click', async () => {
+        if (!supabase) return;
         
-        // 1. Fetch existing materials from cloud to append to
-        const { data: existingData, error: fetchError } = await supabase
-            .from('global_settings')
-            .select('value')
-            .eq('key', 'material_categories')
-            .single();
+        const totalFiles = ceilingTilesFiles.length + roofTilesFiles.length + fabricationFiles.length;
+        
+        if (totalFiles === 0) {
+            alert('Please upload at least one material image in any category!');
+            return;
+        }
+        
+        try {
+            saveMaterialImagesBtn.disabled = true;
+            saveMaterialImagesBtn.textContent = '⏳ Uploading to Cloud...';
             
-        let materialsData = existingData ? existingData.value : {
-            ceilingTiles: [],
-            roofTiles: [],
-            fabrication: []
-        };
-        
-        // 2. Upload and get URLs
-        console.log('🏗️ Uploading ceiling tiles...');
-        const ceilingUrls = await Promise.all(
-            ceilingTilesFiles.map(file => uploadToSupabase(file, 'global/ceiling'))
-        );
-        materialsData.ceilingTiles.push(...ceilingUrls.map(url => ({ url, name: 'Ceiling Tile' })));
-        
-        console.log('🏠 Uploading roof tiles...');
-        const roofUrls = await Promise.all(
-            roofTilesFiles.map(file => uploadToSupabase(file, 'global/roof'))
-        );
-        materialsData.roofTiles.push(...roofUrls.map(url => ({ url, name: 'Roof Tile' })));
-        
-        console.log('🔧 Uploading fabrication materials...');
-        const fabricationUrls = await Promise.all(
-            fabricationFiles.map(file => uploadToSupabase(file, 'global/fabrication'))
-        );
-        materialsData.fabrication.push(...fabricationUrls.map(url => ({ url, name: 'Fabrication Material' })));
-        
-        // 3. Save back to database
-        const { error: saveError } = await supabase
-            .from('global_settings')
-            .upsert({ key: 'material_categories', value: materialsData });
+            // 1. Fetch existing materials from cloud to append to
+            const { data: existingData, error: fetchError } = await supabase
+                .from('global_settings')
+                .select('value')
+                .eq('key', 'material_categories')
+                .single();
+                
+            let materialsData = existingData ? existingData.value : {
+                ceilingTiles: [],
+                roofTiles: [],
+                fabrication: []
+            };
             
-        if (saveError) throw saveError;
-        
-        alert(`✅ Successfully uploaded ${totalFiles} images to the cloud!`);
-        
-        // Clear inputs
-        ceilingTilesFiles = []; roofTilesFiles = []; fabricationFiles = [];
-        ceilingTilesPreview.innerHTML = ''; roofTilesPreview.innerHTML = ''; fabricationPreview.innerHTML = '';
-        if (ceilingTilesInput) ceilingTilesInput.value = '';
-        if (roofTilesInput) roofTilesInput.value = '';
-        if (fabricationInput) fabricationInput.value = '';
-        updateMaterialSaveButton();
-        loadImageCounts();
-        
-    } catch (error) {
-        console.error('❌ Cloud Material Upload Error:', error);
-        alert('❌ Error uploading materials: ' + error.message);
-    } finally {
-        saveMaterialImagesBtn.disabled = false;
-        saveMaterialImagesBtn.textContent = 'Save All Material Images';
-    }
-});
+            // 2. Upload and get URLs
+            console.log('🏗️ Uploading ceiling tiles...');
+            const ceilingUrls = await Promise.all(
+                ceilingTilesFiles.map(file => uploadToSupabase(file, 'global/ceiling'))
+            );
+            materialsData.ceilingTiles.push(...ceilingUrls.map(url => ({ url, name: 'Ceiling Tile' })));
+            
+            console.log('🏠 Uploading roof tiles...');
+            const roofUrls = await Promise.all(
+                roofTilesFiles.map(file => uploadToSupabase(file, 'global/roof'))
+            );
+            materialsData.roofTiles.push(...roofUrls.map(url => ({ url, name: 'Roof Tile' })));
+            
+            console.log('🔧 Uploading fabrication materials...');
+            const fabricationUrls = await Promise.all(
+                fabricationFiles.map(file => uploadToSupabase(file, 'global/fabrication'))
+            );
+            materialsData.fabrication.push(...fabricationUrls.map(url => ({ url, name: 'Fabrication Material' })));
+            
+            // 3. Save back to database
+            const { error: saveError } = await supabase
+                .from('global_settings')
+                .upsert({ key: 'material_categories', value: materialsData });
+                
+            if (saveError) throw saveError;
+            
+            alert(`✅ Successfully uploaded ${totalFiles} images to the cloud!`);
+            
+            // Clear inputs
+            ceilingTilesFiles = []; roofTilesFiles = []; fabricationFiles = [];
+            ceilingTilesPreview.innerHTML = ''; roofTilesPreview.innerHTML = ''; fabricationPreview.innerHTML = '';
+            if (ceilingTilesInput) ceilingTilesInput.value = '';
+            if (roofTilesInput) roofTilesInput.value = '';
+            if (fabricationInput) fabricationInput.value = '';
+            updateMaterialSaveButton();
+            
+        } catch (error) {
+            console.error('❌ Cloud Material Upload Error:', error);
+            alert('❌ Error uploading materials: ' + error.message);
+        } finally {
+            saveMaterialImagesBtn.disabled = false;
+            saveMaterialImagesBtn.textContent = 'Save All Material Images';
+        }
+    });
+}
 
 // Show Instructions
 function showInstructions(type, files) {
@@ -303,77 +310,52 @@ function showInstructions(type, files) {
 }
 
 // Change Password
-document.getElementById('changePasswordBtn').addEventListener('click', () => {
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (currentPassword !== ADMIN_PASSWORD) {
-        alert('❌ Current password is incorrect!');
-        return;
-    }
-    
-    if (newPassword.length < 6) {
-        alert('❌ New password must be at least 6 characters long!');
-        return;
-    }
-    
-    if (newPassword !== confirmPassword) {
-        alert('❌ New passwords do not match!');
-        return;
-    }
-    
-    alert(`✅ Password Changed!\n\nYour new password is: ${newPassword}\n\nIMPORTANT: To make this permanent, you need to:\n1. Open admin-script.js\n2. Find line 2: const ADMIN_PASSWORD = 'admin123';\n3. Change 'admin123' to '${newPassword}'\n4. Save the file\n\nOtherwise, this change will be lost when you refresh the page.`);
-});
-
-// Load Image Counts
-function loadImageCounts() {
-    // Check localStorage for stored materials
-    const storedMaterials = localStorage.getItem('materialCategories');
-    let materialCount = 0;
-    
-    if (storedMaterials) {
-        const materials = JSON.parse(storedMaterials);
-        materialCount = (materials.ceilingTiles?.length || 0) + 
-                       (materials.roofTiles?.length || 0) + 
-                       (materials.fabrication?.length || 0);
-    }
-    
-    // Update the counts (work images would need similar localStorage handling)
-    const workCountEl = document.getElementById('workCount');
-    const materialCountEl = document.getElementById('materialCount');
-    
-    if (workCountEl) {
-        workCountEl.textContent = '0 images (Upload new ones above)';
-    }
-    
-    if (materialCountEl) {
-        if (materialCount > 0) {
-            materialCountEl.textContent = `${materialCount} images uploaded`;
-        } else {
-            materialCountEl.textContent = '0 images (Upload new ones above)';
+const changePasswordBtn = document.getElementById('changePasswordBtn');
+if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', () => {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (currentPassword !== ADMIN_PASSWORD) {
+            alert('❌ Current password is incorrect!');
+            return;
         }
-    }
+        
+        if (newPassword.length < 6) {
+            alert('❌ New password must be at least 6 characters long!');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            alert('❌ New passwords do not match!');
+            return;
+        }
+        
+        alert(`✅ Password Changed!\n\nYour new password is: ${newPassword}\n\nIMPORTANT: To make this permanent, you need to:\n1. Open admin-script.js\n2. Find line 2: const ADMIN_PASSWORD = 'admin123';\n3. Change 'admin123' to '${newPassword}'\n4. Save the file\n\nOtherwise, this change will be lost when you refresh the page.`);
+    });
 }
+
+
 
 // Drag and Drop Support
 function setupDragAndDrop(element, type) {
     element.addEventListener('dragover', (e) => {
         e.preventDefault();
-        element.style.borderColor = '#667eea';
-        element.style.background = '#f8f8ff';
+        element.style.borderColor = 'var(--gold-leaf-accent)';
+        element.style.background = 'var(--surface)';
     });
     
     element.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        element.style.borderColor = '#e0e0e0';
-        element.style.background = '#fafafa';
+        element.style.borderColor = 'var(--border)';
+        element.style.background = 'var(--bg)';
     });
     
     element.addEventListener('drop', (e) => {
         e.preventDefault();
-        element.style.borderColor = '#e0e0e0';
-        element.style.background = '#fafafa';
+        element.style.borderColor = 'var(--border)';
+        element.style.background = 'var(--bg)';
         
         const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
         handleFileUpload(files, type);
@@ -582,25 +564,25 @@ function openProjectModal(projectId) {
             
             <div class="project-info-grid">
                 <div class="info-card">
-                    <h3>📅 Project Timeline</h3>
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Project Timeline</h3>
                     <p><strong>Completed:</strong> ${project.completionDate}</p>
                     <p><strong>Duration:</strong> ${project.duration}</p>
                 </div>
                 
                 <div class="info-card">
-                    <h3>📍 Project Location</h3>
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Project Location</h3>
                     <p>${project.address}</p>
                 </div>
                 
                 <div class="info-card">
-                    <h3>👤 Owner Information</h3>
+                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Owner Information</h3>
                     <p><strong>Name:</strong> ${project.owner.name}</p>
                     <p><strong>Phone:</strong> <a href="tel:${project.owner.phone}">${project.owner.phone}</a></p>
                     <p><strong>Email:</strong> <a href="mailto:${project.owner.email}">${project.owner.email}</a></p>
                 </div>
             </div>
             
-            <h2 class="section-title">📸 Project Gallery - Different Stages</h2>
+            <h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px; vertical-align:middle;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Project Gallery - Different Stages</h2>
             <div class="project-gallery">
                 ${project.images.map(img => `
                     <div class="project-image">
@@ -613,7 +595,7 @@ function openProjectModal(projectId) {
                 `).join('')}
             </div>
             
-            <h2 class="section-title">🔨 Raw Materials Used</h2>
+            <h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px; vertical-align:middle;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Raw Materials Used</h2>
             <div class="materials-list">
                 ${project.materials.map(material => `
                     <div class="material-item">
@@ -628,15 +610,15 @@ function openProjectModal(projectId) {
         </div>
     `;
     
-    modalBody.innerHTML = modalContent;
-    modal.style.display = 'flex';
+    if (modalBody) modalBody.innerHTML = modalContent;
+    if (modal) modal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
 }
 
 // Close Project Modal
 function closeProjectModal() {
     const modal = document.getElementById('projectModal');
-    modal.style.display = 'none';
+    if (modal) modal.style.display = 'none';
     document.body.style.overflow = 'auto'; // Restore scrolling
 }
 
@@ -812,7 +794,9 @@ async function loadProjectsList() {
     if (projectsArray.length === 0) {
         projectsList.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">📁</div>
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </div>
                 <h3>No Projects Yet</h3>
                 <p>Click "Add New Project" to create your first project</p>
             </div>
@@ -861,213 +845,10 @@ async function loadProjectsList() {
     `}).join('');
 }
 
-// Add new project button
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Admin panel JavaScript initialized');
-    initProjectsStorage();
-    
-    const addNewProjectBtn = document.getElementById('addNewProjectBtn');
-    if (addNewProjectBtn) {
-        addNewProjectBtn.addEventListener('click', function() {
-            console.log('➕ Add New Project button clicked');
-            openProjectEditModal();
-        });
-        console.log('✅ Add New Project button event listener attached');
-    } else {
-        console.error('❌ Add New Project button not found');
-    }
-    
-    // Load projects when the tab is active
-    // Load existing materials if tab is active
-    const materialsTab = document.querySelector('[data-tab="upload-materials"]');
-    if (materialsTab && materialsTab.classList.contains('active')) {
-        loadExistingMaterials();
-    }
-
-    // Load projects when the tab is active
-    const manageProjectsTab = document.querySelector('[data-tab="manage-projects"]');
-    if (manageProjectsTab) {
-        manageProjectsTab.addEventListener('click', async function() {
-            await loadProjectsList();
-        });
-        // Load initially if it's the active tab
-        if (manageProjectsTab.classList.contains('active')) {
-            loadProjectsList();
-        }
-    }
-    
-    // Material add button
-    const addMaterialBtn = document.getElementById('addMaterialBtn');
-    if (addMaterialBtn) {
-        addMaterialBtn.addEventListener('click', addMaterialRow);
-    }
-    
-    // Image upload handlers
-    setupImagePreview('outputImages', 'outputImagesPreview');
-    setupImagePreview('progressImages', 'progressImagesPreview');
-    setupImagePreview('materialImages', 'materialImagesPreview');
-    
-    // Form submission
-    const projectForm = document.getElementById('projectForm');
-    if (projectForm) {
-        projectForm.addEventListener('submit', handleProjectSubmit);
-        console.log('✅ Project form event listener attached successfully');
-    } else {
-        console.error('❌ Project form not found - cannot attach event listener');
-    }
-});
-
-// Open project edit modal
-async function openProjectEditModal(projectId = null) {
-    console.log('🔓 Opening project edit modal...', projectId ? `Editing project: ${projectId}` : 'Creating new project');
-    
-    const modal = document.getElementById('projectEditModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const form = document.getElementById('projectForm');
-    
-    if (!modal || !modalTitle || !form) {
-        console.error('❌ Modal elements not found');
-        return;
-    }
-    
-    if (projectId) {
-        // Edit existing project
-        modalTitle.textContent = 'Edit Project';
-        const projects = await getAllProjects();
-        const project = projects[projectId];
-        if (project) {
-            loadProjectDataIntoForm(project);
-        }
-    } else {
-        // New project
-        modalTitle.textContent = 'Add New Project';
-        form.reset();
-        document.getElementById('projectId').value = '';
-        clearMaterialRows();
-        clearImagePreviews();
-        addMaterialRow(); // Add one empty material row
-    }
-    
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    console.log('✅ Modal opened successfully');
-}
-
-// Close project edit modal
-function closeProjectEditModal() {
-    const modal = document.getElementById('projectEditModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Load project data into form
-function loadProjectDataIntoForm(project) {
-    document.getElementById('projectId').value = project.id;
-    document.getElementById('projectTitle').value = project.title || '';
-    document.getElementById('projectDescription').value = project.description || '';
-    document.getElementById('projectDate').value = project.completionDate || '';
-    document.getElementById('projectDuration').value = project.duration || '';
-    document.getElementById('projectAddress').value = project.address || '';
-    document.getElementById('ownerName').value = project.owner?.name || '';
-    document.getElementById('ownerPhone').value = project.owner?.phone || '';
-    document.getElementById('ownerEmail').value = project.owner?.email || '';
-    
-    // Load materials
-    clearMaterialRows();
-    if (project.materials && project.materials.length > 0) {
-        project.materials.forEach(material => {
-            addMaterialRow(material);
-        });
-    } else {
-        addMaterialRow();
-    }
-    
-    // Load images (display existing as thumbnails)
-    displayExistingImages('outputImagesPreview', project.outputImages || []);
-    displayExistingImages('progressImagesPreview', project.progressImages || []);
-    displayExistingImages('materialImagesPreview', project.materialImages || []);
-}
-
-// Display existing images
-function displayExistingImages(previewId, images) {
-    const preview = document.getElementById(previewId);
-    if (!preview) return;
-    
-    preview.innerHTML = images.map((img, index) => `
-        <div class="image-preview-item" data-existing="true" data-index="${index}">
-            <img src="${img}" alt="Image ${index + 1}">
-            <button type="button" class="remove-image" onclick="removeExistingImage('${previewId}', ${index})">&times;</button>
-        </div>
-    `).join('');
-}
-
-// Remove existing image
-function removeExistingImage(previewId, index) {
-    const preview = document.getElementById(previewId);
-    const items = preview.querySelectorAll('[data-existing="true"]');
-    if (items[index]) {
-        items[index].remove();
-    }
-}
-
-// Setup image preview
-function setupImagePreview(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    
-    if (!input || !preview) return;
-    
-    input.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        
-        files.forEach(file => {
-            if (file.type.startsWith('image/')) {
-                // Store the file object for later upload
-                if (inputId === 'outputImages') pendingImages.outputImages.push(file);
-                if (inputId === 'progressImages') pendingImages.progressImages.push(file);
-                if (inputId === 'materialImages') pendingImages.materialImages.push(file);
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'image-preview-item';
-                    div.innerHTML = `
-                        <img src="${e.target.result}" alt="${file.name}">
-                        <button type="button" class="remove-image" data-name="${file.name}">&times;</button>
-                        <p class="image-name">${file.name}</p>
-                    `;
-                    
-                    div.querySelector('.remove-image').addEventListener('click', function() {
-                        const name = this.getAttribute('data-name');
-                        // Remove from pending list
-                        if (inputId === 'outputImages') pendingImages.outputImages = pendingImages.outputImages.filter(f => f.name !== name);
-                        if (inputId === 'progressImages') pendingImages.progressImages = pendingImages.progressImages.filter(f => f.name !== name);
-                        if (inputId === 'materialImages') pendingImages.materialImages = pendingImages.materialImages.filter(f => f.name !== name);
-                        div.remove();
-                    });
-                    
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Clear the input so the same file can be selected again
-        input.value = '';
-    });
-}
-
-// Clear image previews
-function clearImagePreviews() {
-    ['outputImagesPreview', 'progressImagesPreview', 'materialImagesPreview'].forEach(id => {
-        const preview = document.getElementById(id);
-        if (preview) preview.innerHTML = '';
-    });
-}
-
-// Add material row
+// Add material Row
 function addMaterialRow(material = null) {
     const materialsList = document.getElementById('materialsList');
+    if (!materialsList) return;
     const row = document.createElement('div');
     row.className = 'material-row';
     row.innerHTML = `
@@ -1087,90 +868,7 @@ function clearMaterialRows() {
     }
 }
 
-// Get existing image URLs from preview (those already in Supabase)
-function getExistingImagesFromPreview(previewId) {
-    const preview = document.getElementById(previewId);
-    if (!preview) return [];
-    
-    const images = [];
-    preview.querySelectorAll('.image-preview-item[data-existing="true"] img').forEach(img => {
-        images.push(img.src);
-    });
-    return images;
-}
-
-// Handle project form submission
-async function handleProjectSubmit(e) {
-    e.preventDefault();
-    console.log('📝 Form submitted - processing project data...');
-    
-    try {
-        const projectData = {
-            id: document.getElementById('projectId').value || undefined, // Use undefined for auto-uuid on insert
-            title: document.getElementById('projectTitle').value,
-            description: document.getElementById('projectDescription').value,
-            completionDate: document.getElementById('projectDate').value,
-            duration: document.getElementById('projectDuration').value,
-            address: document.getElementById('projectAddress').value,
-            owner: {
-                name: document.getElementById('ownerName').value,
-                phone: document.getElementById('ownerPhone').value,
-                email: document.getElementById('ownerEmail').value
-            },
-            outputImages: getExistingImagesFromPreview('outputImagesPreview'),
-            progressImages: getExistingImagesFromPreview('progressImagesPreview'),
-            materialImages: getExistingImagesFromPreview('materialImagesPreview'),
-            materials: []
-        };
-        
-        // Get materials
-        document.querySelectorAll('.material-row').forEach(row => {
-            const name = row.querySelector('.material-name').value;
-            if (name.trim()) {
-                projectData.materials.push({
-                    name: name,
-                    quantity: row.querySelector('.material-quantity').value,
-                    supplier: row.querySelector('.material-supplier').value
-                });
-            }
-        });
-        
-        console.log('💾 Saving project:', projectData);
-        
-        // Save project
-        const projectId = await saveProject(projectData);
-        
-        console.log('✅ Project saved with ID:', projectId);
-        
-        // Close modal and reload list
-        closeProjectEditModal();
-        await loadProjectsList();
-        
-        alert('✅ Project saved successfully!');
-    } catch (error) {
-        console.error('❌ Error saving project:', error);
-        alert('❌ Error saving project: ' + error.message);
-    }
-}
-
-// Edit project
-async function editProject(projectId) {
-    await openProjectEditModal(projectId);
-}
-
-// Confirm delete project
-async function confirmDeleteProject(projectId) {
-    const projects = await getAllProjects();
-    const project = projects[projectId];
-    
-    if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
-        await deleteProject(projectId);
-        await loadProjectsList();
-        alert('Project deleted successfully!');
-    }
-}
-
-// Update the main openProjectModal function to load from cloud storage
+// Display Project Modal
 async function openProjectModal(projectId) {
     const modal = document.getElementById('projectModal');
     const modalBody = document.getElementById('modalBody');
@@ -1276,16 +974,11 @@ async function openProjectModal(projectId) {
         </div>
     `;
     
-    modalBody.innerHTML = modalContent;
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    if (modalBody) modalBody.innerHTML = modalContent;
+    if (modal) modal.style.display = 'flex';
 }
 
-console.log('✅ Project Management System Loaded');
-
-
-
-// Load existing materials
+// Manage Materials
 async function loadExistingMaterials() {
     if (!supabase) return;
     try {
@@ -1329,7 +1022,7 @@ function renderExistingMaterials(containerId, items, category) {
 }
 
 async function deleteExistingMaterial(category, index) {
-    if (!confirm('Are you sure you want to delete this material image?')) return;
+    if (!confirm('Are you sure you want to delete this material?')) return;
     
     try {
         const { data, error } = await supabase
@@ -1341,26 +1034,25 @@ async function deleteExistingMaterial(category, index) {
         if (error) throw error;
         
         let materialsData = data.value;
-        if (materialsData && materialsData[category]) {
+        if (materialsData[category]) {
             materialsData[category].splice(index, 1);
             
-            const { error: updateError } = await supabase
+            const { error: saveError } = await supabase
                 .from('global_settings')
-                .update({ value: materialsData })
-                .eq('key', 'material_categories');
+                .upsert({ key: 'material_categories', value: materialsData });
                 
-            if (updateError) throw updateError;
+            if (saveError) throw saveError;
             
-            // Reload
-            loadExistingMaterials();
-            alert('Image deleted successfully!');
+            alert('✅ Material deleted successfully!');
+            loadExistingMaterials(); // Refresh
         }
     } catch (e) {
-        console.error('Error deleting material image:', e);
-        alert('Failed to delete image: ' + e.message);
+        console.error("Error deleting material:", e);
+        alert('❌ Error deleting material: ' + e.message);
     }
 }
 
+// Leads Management
 async function loadLeadsList() {
     const leadsList = document.getElementById('leadsList');
     if (!leadsList || !supabase) return;
@@ -1381,8 +1073,14 @@ async function loadLeadsList() {
                         <p class="project-meta">${new Date(lead.created_at).toLocaleString()}</p>
                     </div>
                     <div class="lead-actions" style="display:flex; gap:10px;">
-                        <a href="tel:${lead.phone}" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">📞 Call</a>
-                        <a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px; background:#25D366; color:white; border-color:#25D366;">💬 WhatsApp</a>
+                        <a href="tel:${lead.phone}" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.82 12.82 0 0 0 .63 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.63A2 2 0 0 1 22 16.92z"></path></svg>
+                            Call
+                        </a>
+                        <a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" class="edit-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px; background:#25D366; color:white; border-color:#25D366;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            WhatsApp
+                        </a>
                     </div>
                 </div>
                 <div class="project-summary" style="display:block; margin-top:15px;">
@@ -1412,11 +1110,11 @@ async function loadLeadsList() {
 
 function getStatusColor(status) {
     switch(status) {
-        case 'New': return '#ffb020'; // Accent yellow
-        case 'In Progress': return '#3498db'; // Blue
-        case 'Need to Call': return '#e67e22'; // Orange
-        case 'Completed': return '#2ecc71'; // Green
-        case 'Cancelled': return '#e74c3c'; // Red
+        case 'New': return '#ffb020'; 
+        case 'In Progress': return '#3498db'; 
+        case 'Need to Call': return '#e67e22'; 
+        case 'Completed': return '#2ecc71'; 
+        case 'Cancelled': return '#e74c3c'; 
         default: return '#ffb020';
     }
 }
@@ -1435,14 +1133,457 @@ async function updateLeadStatus(id, newStatus) {
     }
 }
 
-// Hook leads to tab
-document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if(btn.getAttribute('data-tab') === 'manage-leads') {
-                loadLeadsList();
+// --- Manage Content (Pricing & Business Info) ---
+
+function getLocalContent() {
+    return JSON.parse(localStorage.getItem('roofing_manage_content') || '{}');
+}
+
+async function loadManageContent() {
+    const fields = ['basePriceSqft', 'businessName', 'tagline', 'address', 'email', 'phone', 'hours'];
+    
+    // 1. Load from LocalStorage first (Instant)
+    const localData = getLocalContent();
+    const localPrice = localStorage.getItem('roofing_standard_price');
+    
+    if (localPrice && document.getElementById('basePriceSqft')) {
+        document.getElementById('basePriceSqft').value = localPrice;
+    }
+    
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && localData[id]) {
+            el.value = localData[id];
+        }
+    });
+
+    if (!supabase) return;
+
+    try {
+        console.log("🔄 Loading content from Supabase...");
+        const { data, error } = await supabase
+            .from('global_settings')
+            .select('*');
+
+        if (error) throw error;
+        
+        const settings = {};
+        data.forEach(item => {
+            settings[item.key] = item.value;
+        });
+
+        // Update Price from Cloud History
+        const { data: priceData, error: priceError } = await supabase
+            .from('pricing_history')
+            .select('price_per_sqft, created_at')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (!priceError && priceData) {
+            const val = priceData.price_per_sqft;
+            const priceInput = document.getElementById('basePriceSqft');
+            if (priceInput) priceInput.value = val;
+            localStorage.setItem('roofing_standard_price', val);
+            
+            const timestampEl = document.getElementById('priceTimestamp');
+            if (timestampEl) {
+                const date = new Date(priceData.created_at);
+                timestampEl.innerText = `Last updated: ${date.toLocaleString()}`;
+            }
+        } else if (settings['standard_price_per_sqft']) {
+            // Fallback to legacy field
+            const val = typeof settings['standard_price_per_sqft'] === 'object' ? settings['standard_price_per_sqft'].price : settings['standard_price_per_sqft'];
+            const priceInput = document.getElementById('basePriceSqft');
+            if (priceInput) priceInput.value = val;
+            localStorage.setItem('roofing_standard_price', val);
+        }
+
+        // Update Business Info from Cloud
+        const businessInfo = settings['business_info'] || {};
+        const cloudMapping = {
+            'businessName': businessInfo.name,
+            'tagline': businessInfo.tagline,
+            'address': businessInfo.address,
+            'email': businessInfo.email,
+            'phone': businessInfo.phone,
+            'hours': businessInfo.hours
+        };
+
+        Object.keys(cloudMapping).forEach(id => {
+            const el = document.getElementById(id);
+            if (el && cloudMapping[id]) {
+                el.value = cloudMapping[id];
+                localData[id] = cloudMapping[id];
             }
         });
+        
+        localStorage.setItem('roofing_manage_content', JSON.stringify(localData));
+
+    } catch (e) {
+        console.warn("Could not load from cloud, using local data:", e);
+    }
+}
+
+async function saveManageContent() {
+    const saveBtn = document.getElementById('saveContentBtn');
+    if (!saveBtn) return;
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ Saving...';
+
+        const dataToSave = {
+            basePriceSqft: document.getElementById('basePriceSqft')?.value,
+            businessName: document.getElementById('businessName')?.value,
+            tagline: document.getElementById('tagline')?.value,
+            address: document.getElementById('address')?.value,
+            email: document.getElementById('email')?.value,
+            phone: document.getElementById('phone')?.value,
+            hours: document.getElementById('hours')?.value
+        };
+
+        // 1. Save Locally
+        localStorage.setItem('roofing_manage_content', JSON.stringify(dataToSave));
+        if (dataToSave.basePriceSqft) {
+            localStorage.setItem('roofing_standard_price', dataToSave.basePriceSqft);
+        }
+
+        if (!supabase) {
+            alert("✅ Saved locally. (Supabase not connected)");
+            return;
+        }
+
+        // 2. Save to Cloud
+        const now = new Date().toISOString();
+        
+        // A. Update History Table (New Request)
+        const { error: historyError } = await supabase
+            .from('pricing_history')
+            .insert([{ 
+                price_per_sqft: parseFloat(dataToSave.basePriceSqft),
+                metadata: { source: 'admin_panel' }
+            }]);
+
+        if (historyError) console.warn("Could not save to history table:", historyError);
+
+        // B. Update Global Settings (Redundant but keeps both in sync)
+        const updates = [
+            { 
+                key: 'standard_price_per_sqft', 
+                value: { 
+                    price: parseFloat(dataToSave.basePriceSqft),
+                    updatedAt: now
+                } 
+            },
+            {
+                key: 'business_info',
+                value: {
+                    name: dataToSave.businessName,
+                    tagline: dataToSave.tagline,
+                    address: dataToSave.address,
+                    email: dataToSave.email,
+                    phone: dataToSave.phone,
+                    hours: dataToSave.hours,
+                    updatedAt: now
+                }
+            }
+        ];
+
+        const { error } = await supabase
+            .from('global_settings')
+            .upsert(updates);
+
+        if (error) throw error;
+        
+        // Update timestamp display
+        const timestampEl = document.getElementById('priceTimestamp');
+        if (timestampEl) {
+            timestampEl.innerText = `Last updated: ${new Date(now).toLocaleString()}`;
+        }
+
+        alert("✅ All changes saved successfully to cloud!");
+        
+        // Refresh local UI to show any formatted results from cloud
+        loadManageContent();
+    } catch (e) {
+        console.error("Error saving content:", e);
+        alert("❌ Saved locally, but failed to sync with cloud: " + e.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+    }
+}
+
+// Function to apply business info and pricing to any page (Used by index.html etc.)
+async function applyDynamicContent() {
+    if (typeof supabase === 'undefined') return;
+    
+    try {
+        const { data, error } = await supabase.from('global_settings').select('*');
+        if (error) throw error;
+        
+        const settings = {};
+        data.forEach(item => settings[item.key] = item.value);
+        
+        const info = settings['business_info'] || {};
+        
+        // Update Brand/Logo
+        if (info.name) {
+            document.querySelectorAll('.logo').forEach(el => el.innerText = info.name);
+            document.title = `${info.name} - Portfolio & Services`;
+        }
+        
+        // Update Hero Title/Tagline
+        if (info.name && document.querySelector('.hero-content h1')) {
+            document.querySelector('.hero-content h1').innerText = `Welcome to ${info.name}`;
+        }
+        if (info.tagline && document.querySelector('.hero-content p')) {
+            document.querySelector('.hero-content p').innerText = info.tagline;
+        }
+        
+        // Update Footer Description
+        if (info.tagline && document.querySelector('.footer-brand p')) {
+            document.querySelector('.footer-brand p').innerText = `Providing premium roofing solutions with ${info.tagline}. Quality, durability, and craftsmanship.`;
+        }
+        
+        // Update Contact Details
+        if (info.address) {
+            document.querySelectorAll('.address-display').forEach(el => el.innerText = info.address);
+            // Example replacement if using specific structure
+            const addressItems = document.querySelectorAll('.info-item, .footer-contact-item');
+            addressItems.forEach(item => {
+                const h3 = item.querySelector('h3');
+                if (h3 && h3.innerText.includes('Address')) {
+                    const p = item.querySelector('p');
+                    if (p) p.innerText = info.address;
+                } else if (item.innerHTML.includes('path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"')) {
+                    const p = item.querySelector('p');
+                    if (p) p.innerText = info.address;
+                }
+            });
+        }
+        
+        if (info.email) {
+            document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
+                a.href = `mailto:${info.email}`;
+                a.innerText = info.email;
+            });
+        }
+        
+        if (info.phone) {
+            document.querySelectorAll('a[href^="tel:"]').forEach(a => {
+                const cleanPhone = info.phone.replace(/[^0-9+]/g, '');
+                a.href = `tel:${cleanPhone}`;
+                a.innerText = info.phone;
+            });
+        }
+        
+        if (info.hours) {
+            const hourItems = document.querySelectorAll('.info-item, .footer-section');
+            hourItems.forEach(item => {
+                const h3 = item.querySelector('h3, .footer-heading');
+                if (h3 && h3.innerText.includes('Hours')) {
+                    const p = item.querySelector('p');
+                    if (p) p.innerText = info.hours;
+                }
+            });
+        }
+
+        // --- NEW: Handle Mobile-Only / Visual Authority Dynamic Content ---
+        if (info.name) {
+            // Update "Irfaaz Roofing Masterpiece" text in mobile section
+            document.querySelectorAll('.visual-authority .fade-up').forEach(el => {
+                if (el.tagName === 'SPAN' && el.innerText.toLowerCase().includes('roofing masterpiece')) {
+                    el.innerText = `${info.name} Masterpiece`;
+                }
+            });
+        }
+        
+        if (info.tagline) {
+            // Update "Precision in Every Shingle" if we want tagline there instead
+            const visualH2 = document.querySelector('.visual-authority h2');
+            if (visualH2) {
+                // If it's a new tagline, we could use it here or keep the hardcoded "Precision" one
+                // For now, let's keep it robust
+            }
+        }
+
+        // Apply Price to Specific Displays if needed (Handled by fetchCurrentPrice usually)
+    } catch (e) {
+        console.error("Dynamic content application failed", e);
+    }
+}
+
+// Final Global Hooks
+document.addEventListener('DOMContentLoaded', () => {
+    const saveBtn = document.getElementById('saveContentBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            saveManageContent();
+        });
+    }
+    
+    if (typeof isAuthenticated !== 'undefined' && isAuthenticated) {
+        loadManageContent();
+        loadProjectsList();
+    }
+
+    // --- Project Management Listeners ---
+    const addNewProjectBtn = document.getElementById('addNewProjectBtn');
+    if (addNewProjectBtn) {
+        addNewProjectBtn.addEventListener('click', () => {
+            resetProjectForm();
+            document.getElementById('modalTitle').innerText = 'Add New Project';
+            document.getElementById('projectEditModal').style.display = 'flex';
+        });
+    }
+
+    const projectForm = document.getElementById('projectForm');
+    if (projectForm) {
+        projectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = projectForm.querySelector('button[type="submit"]');
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Saving...';
+                
+                const projectData = {
+                    id: document.getElementById('projectId').value || null,
+                    title: document.getElementById('projectTitle').value,
+                    description: document.getElementById('projectDescription').value,
+                    address: document.getElementById('projectAddress').value,
+                    completionDate: document.getElementById('projectDate').value,
+                    duration: document.getElementById('projectDuration').value,
+                    owner: {
+                        name: document.getElementById('ownerName').value,
+                        phone: document.getElementById('ownerPhone').value,
+                        email: document.getElementById('ownerEmail').value
+                    },
+                    materials: Array.from(document.querySelectorAll('.material-row')).map(row => ({
+                        name: row.querySelector('.material-name').value,
+                        quantity: row.querySelector('.material-quantity').value,
+                        supplier: row.querySelector('.material-supplier').value
+                    }))
+                };
+                
+                // If it's an update, we need to pass along existing image arrays
+                // (In a real app, you'd manage this better, but let's keep it simple)
+                if (projectData.id) {
+                    const allProjects = await getAllProjects();
+                    const existing = allProjects[projectData.id];
+                    if (existing) {
+                        projectData.outputImages = existing.outputImages || [];
+                        projectData.progressImages = existing.progressImages || [];
+                        projectData.materialImages = existing.materialImages || [];
+                    }
+                }
+                
+                await saveProject(projectData);
+                alert('✅ Project saved successfully!');
+                closeProjectEditModal();
+                loadProjectsList();
+            } catch (err) {
+                console.error('Error saving project:', err);
+                alert('❌ Error saving project: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Project';
+            }
+        });
+    }
+
+    const addMaterialBtn = document.getElementById('addMaterialBtn');
+    if (addMaterialBtn) {
+        addMaterialBtn.addEventListener('click', () => addMaterialRow());
+    }
+
+    // Image Input Previews
+    const imageInputs = [
+        { id: 'outputImages', previewId: 'outputImagesPreview', type: 'outputImages' },
+        { id: 'progressImages', previewId: 'progressImagesPreview', type: 'progressImages' },
+        { id: 'materialImages', previewId: 'materialImagesPreview', type: 'materialImages' }
+    ];
+
+    imageInputs.forEach(input => {
+        const el = document.getElementById(input.id);
+        const previewEl = document.getElementById(input.previewId);
+        if (el && previewEl) {
+            el.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                pendingImages[input.type] = files;
+                
+                previewEl.innerHTML = '';
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        const img = document.createElement('img');
+                        img.src = re.target.result;
+                        img.style.width = '60px';
+                        img.style.height = '60px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '4px';
+                        previewEl.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
     });
 });
+
+function resetProjectForm() {
+    const form = document.getElementById('projectForm');
+    if (form) form.reset();
+    document.getElementById('projectId').value = '';
+    document.getElementById('materialsList').innerHTML = '';
+    document.getElementById('outputImagesPreview').innerHTML = '';
+    document.getElementById('progressImagesPreview').innerHTML = '';
+    document.getElementById('materialImagesPreview').innerHTML = '';
+    pendingImages.outputImages = [];
+    pendingImages.progressImages = [];
+    pendingImages.materialImages = [];
+}
+
+function closeProjectEditModal() {
+    document.getElementById('projectEditModal').style.display = 'none';
+}
+
+async function editProject(projectId) {
+    resetProjectForm();
+    const allProjects = await getAllProjects();
+    const project = allProjects[projectId];
+    
+    if (!project) return;
+    
+    document.getElementById('modalTitle').innerText = 'Edit Project';
+    document.getElementById('projectId').value = project.id;
+    document.getElementById('projectTitle').value = project.title || '';
+    document.getElementById('projectDescription').value = project.description || '';
+    document.getElementById('projectAddress').value = project.address || '';
+    document.getElementById('projectDate').value = project.completionDate || '';
+    document.getElementById('projectDuration').value = project.duration || '';
+    document.getElementById('ownerName').value = project.owner?.name || '';
+    document.getElementById('ownerPhone').value = project.owner?.phone || '';
+    document.getElementById('ownerEmail').value = project.owner?.email || '';
+    
+    if (project.materials && project.materials.length > 0) {
+        project.materials.forEach(m => addMaterialRow(m));
+    }
+    
+    document.getElementById('projectEditModal').style.display = 'flex';
+}
+
+async function confirmDeleteProject(projectId) {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+        try {
+            await deleteProject(projectId);
+            alert('✅ Project deleted successfully!');
+            loadProjectsList();
+        } catch (err) {
+            alert('❌ Error deleting project: ' + err.message);
+        }
+    }
+}

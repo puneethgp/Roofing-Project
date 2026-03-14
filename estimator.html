@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Estimator - Irfaaz Roofing</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="assets/js/admin-script.js"></script>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Irfaaz Roofing</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="portfolio.html" class="nav-link">Works</a></li>
+                <li><a href="estimator.html" class="nav-link active">Estimator</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li>
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"
+                        style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 5px;">
+                        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="feather feather-moon">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg id="sunIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20"
+                            height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                </li>
+                <li><a href="admin.html" class="nav-link login-btn"
+                        style="border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px;">Login</a></li>
+            </ul>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Estimator Content -->
+    <section class="hero" style="min-height: 40vh; padding: 140px 20px 80px; align-items: center;">
+        <div class="hero-content">
+            <h1>Cost Estimator</h1>
+            <p>Get an instant estimate for your roofing project based on our standard pricing.</p>
+        </div>
+    </section>
+
+    <section class="estimator-page" style="padding-top: 60px; min-height: 50vh;">
+        <div class="container">
+
+            <div class="estimator-card"
+                style="max-width: 600px; margin: 0 auto; background: var(--card); padding: 40px; border-radius: 12px; border: 1px solid var(--border);">
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 0.8rem; font-weight: 600;">Roof Area (sq ft)</label>
+                    <input type="number" id="estArea" placeholder="e.g. 1200" value="1200"
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text);">
+                </div>
+
+                <div id="priceInfo" style="display: none;">
+                    <p style="margin: 0; font-size: 1rem;">Standard Pricing: <strong id="currentPriceDisplay">₹320 to
+                            350</strong> per sq ft</p>
+                </div>
+
+                <button onclick="calculateEstimate()" class="submit-btn"
+                    style="width: 100%; padding: 15px; border-radius: 8px; background: var(--accent); color: #111; border: none; font-weight: 700; cursor: pointer;">Calculate
+                    Estimate</button>
+
+                <div id="estResult" class="est-result"
+                    style="display:none; margin-top:30px; padding:30px; border-radius:12px; border: 1px solid var(--accent); background: var(--surface); text-align: center;">
+                    <h4 style="margin-bottom: 10px; color: var(--text-muted);">Estimated Total Cost:</h4>
+                    <h2 id="estPrice" style="color:var(--accent); font-size: 2.5rem; margin-bottom: 15px;">₹3,84,000
+                    </h2>
+                    <p style="color:var(--text-muted); font-size: 14px;">*This is a rough estimate based on our current
+                        standard rate. Final pricing may vary based on site complexity and specific requirements.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script>
+        let standardPrice = 320;
+
+        async function fetchCurrentPrice() {
+            // Load from local storage first (last known good price)
+            const savedPrice = localStorage.getItem('roofing_standard_price');
+            if (savedPrice) {
+                standardPrice = parseFloat(savedPrice);
+                updateDisplay();
+            }
+
+            if (!supabase) return;
+            try {
+                // 1. Try fetching from dedicated pricing_history table
+                const { data: priceData, error: priceError } = await supabase
+                    .from('pricing_history')
+                    .select('price_per_sqft')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (!priceError && priceData) {
+                    standardPrice = priceData.price_per_sqft;
+                    localStorage.setItem('roofing_standard_price', standardPrice);
+                    updateDisplay();
+                    return;
+                }
+
+                // 2. Fallback to global_settings if history table is empty/unavailable
+                const { data, error } = await supabase
+                    .from('global_settings')
+                    .select('value')
+                    .eq('key', 'standard_price_per_sqft')
+                    .single();
+
+                if (!error && data) {
+                    standardPrice = typeof data.value === 'object' ? data.value.price : parseFloat(data.value);
+                    localStorage.setItem('roofing_standard_price', standardPrice);
+                    updateDisplay();
+                }
+            } catch (err) {
+                console.error('Error fetching price from cloud:', err);
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentPriceDisplay').innerText = '₹' + standardPrice + ' to ' + (parseFloat(standardPrice) + 30);
+        }
+
+        function calculateEstimate() {
+            const area = document.getElementById('estArea').value || 0;
+            const minTotal = area * standardPrice;
+            const maxTotal = minTotal * 1.10; // +10%
+
+            const formatter = new Intl.NumberFormat('en-IN', { 
+                style: 'currency', 
+                currency: 'INR',
+                maximumFractionDigits: 0
+            });
+
+            document.getElementById('estPrice').innerText = formatter.format(minTotal) + ' - ' + formatter.format(maxTotal);
+            document.getElementById('estResult').style.display = 'block';
+            
+            // Animation effect
+            document.getElementById('estResult').classList.add('fade-up');
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchCurrentPrice);
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo">Irfaaz Roofing</div>
+                    <p>Providing premium roofing solutions with over 15 years of industry excellence. Quality,
+                        durability, and craftsmanship in every shingle.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="portfolio.html">Our Works</a></li>
+                        <li><a href="materials.html">Materials</a></li>
+                        <li><a href="estimator.html">Estimator</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html#contact">Privacy Policy</a></li>
+                        <li><a href="index.html#contact">Terms of Service</a></li>
+                        <li><a href="index.html#contact">FAQ</a></li>
+                        <li><a href="index.html#contact">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Contact Info</h4>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        </span>
+                        <p>Sakleshpura, Karnataka, India 573134</p>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        </span>
+                        <p>puneethgp18@gmail.com</p>
+                    </div>
+                    <div class="footer-contact-item">
+                        <span class="footer-contact-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.82 12.82 0 0 0 .63 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.63A2 2 0 0 1 22 16.92z"></path></svg>
+                        </span>
+                        <p>+91 82966 34105</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Irfaaz Roofing. All rights reserved.</p>
+                <p>Designed for Excellence</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            const moonIcon = document.getElementById('moonIcon');
+            const sunIcon = document.getElementById('sunIcon');
+
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            if (currentTheme === 'light') {
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+            } else {
+                moonIcon.style.display = 'block';
+                sunIcon.style.display = 'none';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'block';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    moonIcon.style.display = 'block';
+                    sunIcon.style.display = 'none';
+                }
+            });
+
+            // Mobile menu logic
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const navMenu = document.querySelector('.nav-menu');
+
+            if (hamburgerBtn && navMenu) {
+                hamburgerBtn.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                    const spans = hamburgerBtn.querySelectorAll('span');
+                    if (navMenu.classList.contains('active')) {
+                        spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                        spans[1].style.opacity = '0';
+                        spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+                    } else {
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    }
+                });
+
+                // Close menu when clicking a link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navMenu.classList.remove('active');
+                        const spans = hamburgerBtn.querySelectorAll('span');
+                        spans[0].style.transform = 'none';
+                        spans[1].style.opacity = '1';
+                        spans[2].style.transform = 'none';
+                    });
+                });
+            }
+
+            // Apply Dynamic Business Content
+            if (typeof applyDynamicContent === 'function') {
+                applyDynamicContent();
+            }
+        });
+    </script>
+</body>
+
+</html>

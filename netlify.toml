@@ -1,0 +1,12 @@
+[build]
+  publish = "."
+  command = "ls -la" # Just lists directory, no build command needed for static site
+
+[dev]
+  port = 8000
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

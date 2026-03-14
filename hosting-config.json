@@ -1,0 +1,19 @@
+{
+    "active_provider": "netlify",
+    "providers": {
+        "netlify": {
+            "enabled": true,
+            "site_id": "",
+            "description": "Static hosting with Netlify"
+        },
+        "vercel": {
+            "enabled": false,
+            "project_id": "",
+            "description": "Static hosting with Vercel"
+        },
+        "github_pages": {
+            "enabled": false,
+            "description": "Hosting via GitHub Pages"
+        }
+    }
+}

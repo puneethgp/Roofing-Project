@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Irfaaz Roofing</title>
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/admin-style.css">
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,7 +17,10 @@
     <!-- Login Section -->
     <div id="loginSection" class="login-container">
         <div class="login-box">
-            <h1>🔐 Admin Login</h1>
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h1>Admin Login</h1>
             <p>Enter your password to access the admin panel</p>
             <form id="loginForm">
                 <input type="password" id="passwordInput" placeholder="Enter Admin Password" required>
@@ -32,8 +36,34 @@
         <!-- Header -->
         <header class="admin-header">
             <div class="header-content">
-                <h1>📊 Admin Dashboard</h1>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <h1>Admin Dashboard</h1>
+                </div>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"
+                        style="background: none; border: none; cursor: pointer; color: var(--gold-leaf-accent); display: flex; align-items: center; padding: 5px;">
+                        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="feather feather-moon">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg id="sunIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                    <button id="logoutBtn" class="logout-btn">Logout</button>
+                </div>
             </div>
         </header>
 
@@ -52,8 +82,14 @@
             <!-- Manage Projects -->
             <div id="manage-projects" class="tab-pane active">
                 <div class="page-header">
-                    <h2>📁 Manage Projects</h2>
-                    <button id="addNewProjectBtn" class="primary-btn">+ Add New Project</button>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <h2>Manage Projects</h2>
+                    </div>
+                    <button id="addNewProjectBtn" class="primary-btn" style="display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add New Project
+                    </button>
                 </div>
                 
                 <div id="projectsList" class="projects-list">
@@ -68,11 +104,16 @@
                 
                 <!-- Ceiling Tiles -->
                 <div class="upload-section material-upload-category">
-                    <h3>🏗️ Ceiling Tiles</h3>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    <h3>Ceiling Tiles</h3>
+                </div>
                     <div class="upload-box">
                         <input type="file" id="ceilingTilesFiles" accept="image/*" multiple>
                         <label for="ceilingTilesFiles" class="upload-label">
-                            <div class="upload-icon">📦</div>
+                            <div class="upload-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            </div>
                             <p>Upload Ceiling Tiles Images</p>
                             <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
                         </label>
@@ -84,11 +125,16 @@
                 
                 <!-- Roof Tiles -->
                 <div class="upload-section material-upload-category">
-                    <h3>🏠 Roof Tiles</h3>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <h3>Roof Tiles</h3>
+                </div>
                     <div class="upload-box">
                         <input type="file" id="roofTilesFiles" accept="image/*" multiple>
                         <label for="roofTilesFiles" class="upload-label">
-                            <div class="upload-icon">🏘️</div>
+                            <div class="upload-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            </div>
                             <p>Upload Roof Tiles Images</p>
                             <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
                         </label>
@@ -100,11 +146,16 @@
                 
                 <!-- Fabrication Materials -->
                 <div class="upload-section material-upload-category">
-                    <h3>🔧 Fabrication Materials</h3>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    <h3>Fabrication Materials</h3>
+                </div>
                     <div class="upload-box">
                         <input type="file" id="fabricationFiles" accept="image/*" multiple>
                         <label for="fabricationFiles" class="upload-label">
-                            <div class="upload-icon">🛠️</div>
+                            <div class="upload-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            </div>
                             <p>Upload Fabrication Materials Images</p>
                             <span>Supports: JPG, PNG, GIF (Max 5MB each)</span>
                         </label>
@@ -121,7 +172,10 @@
             <!-- Manage Leads -->
             <div id="manage-leads" class="tab-pane">
                 <div class="page-header">
-                    <h2>📥 Leads & Contact Requests</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                        <h2>Leads & Contact Requests</h2>
+                    </div>
                 </div>
                 <div id="leadsList" class="projects-list">
                     <div class="loading">Loading leads...</div>
@@ -132,6 +186,15 @@
             <div id="manage-content" class="tab-pane">
                 <h2>Manage Website Content</h2>
                 
+                <div class="content-section">
+                    <h3>Pricing Configuration</h3>
+                    <div class="form-group">
+                        <label>Standard Price per Sq Ft (₹):</label>
+                        <input type="number" id="basePriceSqft" placeholder="e.g. 320" value="320">
+                        <span id="priceTimestamp" style="display: block; font-size: 11px; color: var(--text-muted); margin-top: 4px;"></span>
+                    </div>
+                </div>
+
                 <div class="content-section">
                     <h3>Business Information</h3>
                     <div class="form-group">
@@ -166,13 +229,16 @@ Sunday: Closed</textarea>
                     </div>
                 </div>
 
-                <button class="save-btn">Save Changes</button>
+                <button id="saveContentBtn" class="save-btn">Save Changes</button>
                 <p class="note">Note: To apply these changes, you'll need to manually update the index.html file or implement a backend system.</p>
             </div>
 
             <!-- Settings -->
             <div id="settings" class="tab-pane">
-                <h2>Admin Settings</h2>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <h2>Admin Settings</h2>
+                </div>
                 
                 <div class="content-section">
                     <h3>Change Admin Password</h3>
@@ -191,19 +257,7 @@ Sunday: Closed</textarea>
                     <button id="changePasswordBtn" class="save-btn">Change Password</button>
                 </div>
 
-                <div class="content-section">
-                    <h3>Current Uploaded Images</h3>
-                    <div class="stats">
-                        <div class="stat-box">
-                            <h4>Work Images</h4>
-                            <p id="workCount">0 images</p>
-                        </div>
-                        <div class="stat-box">
-                            <h4>Material Images</h4>
-                            <p id="materialCount">0 images</p>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -276,7 +330,10 @@ Sunday: Closed</textarea>
                 </div>
                 
                 <div class="form-section">
-                    <h3>📸 Project Images</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        <h3 style="margin-bottom: 0;">Project Images</h3>
+                    </div>
                     
                     <div class="image-upload-section">
                         <label class="upload-category">Final/Output Images</label>
@@ -298,7 +355,10 @@ Sunday: Closed</textarea>
                 </div>
                 
                 <div class="form-section">
-                    <h3>🔨 Raw Materials Used</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        <h3 style="margin-bottom: 0;">Raw Materials Used</h3>
+                    </div>
                     <div id="materialsList">
                         <!-- Materials will be added here -->
                     </div>
@@ -314,5 +374,41 @@ Sunday: Closed</textarea>
     </div>
 
     <script src="assets/js/admin-script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            const moonIcon = document.getElementById('moonIcon');
+            const sunIcon = document.getElementById('sunIcon');
+
+            // Check for saved theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            if (currentTheme === 'light') {
+                if (moonIcon) moonIcon.style.display = 'none';
+                if (sunIcon) sunIcon.style.display = 'block';
+            } else {
+                if (moonIcon) moonIcon.style.display = 'block';
+                if (sunIcon) sunIcon.style.display = 'none';
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    let theme = document.documentElement.getAttribute('data-theme');
+                    if (theme === 'dark') {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        localStorage.setItem('theme', 'light');
+                        if (moonIcon) moonIcon.style.display = 'none';
+                        if (sunIcon) sunIcon.style.display = 'block';
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                        if (moonIcon) moonIcon.style.display = 'block';
+                        if (sunIcon) sunIcon.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
