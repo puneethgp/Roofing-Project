@@ -3,8 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Irfaaz Roofing - Portfolio & Services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Irfaaz Roofing - Portfolio &amp; Services</title>
+    <meta name="description" content="Irfaaz Roofing offers premium roofing solutions in Sakleshpura, Karnataka. Expert craftsmanship, quality materials, and 15+ years experience. Get a free consultation today.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,6 +17,13 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;600;700&display=swap"
         rel="stylesheet">
     <script src="assets/js/admin-script.js"></script>
+
+    <!-- Vercel Analytics -->
+    <script type="module">
+        if (!window.location.hostname.includes('netlify.app')) {
+            import('https://esm.sh/@vercel/analytics').then(m => m.inject());
+        }
+    </script>
 </head>
 
 <body>
@@ -346,9 +355,9 @@
                 <div class="footer-section">
                     <h4 class="footer-heading">Support</h4>
                     <ul class="footer-links">
-                        <li><a href="index.html#contact">Privacy Policy</a></li>
-                        <li><a href="index.html#contact">Terms of Service</a></li>
-                        <li><a href="index.html#contact">FAQ</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
                         <li><a href="index.html#contact">Contact Us</a></li>
                     </ul>
                 </div>
@@ -403,6 +412,8 @@
             await loadAllProjects();
             loadFeaturedProjectsWithPagination();
             await loadHomeMaterials();
+            // Open modal if URL has ?project=id
+            if (typeof checkProjectUrlParam === 'function') checkProjectUrlParam();
         });
 
         // Fetch raw materials for home page
@@ -484,10 +495,10 @@
             }
 
             try {
+                await loadProjectsMeta();
                 const { data, error } = await supabase
                     .from('projects')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                    .select('*');
 
                 if (error) throw error;
                 // Map from lowercase DB columns to the camelCase properties expected by the app
@@ -498,6 +509,7 @@
                     progressImages: p.progressimages || p.progressImages || [],
                     materialImages: p.materialimages || p.materialImages || []
                 }));
+                sortProjectsArray(allProjects);
 
                 // If cloud is empty, show a nice message
                 if (allProjects.length === 0) {
@@ -802,7 +814,7 @@
                 resultDiv.classList.add('fade-up');
             }
 
-            // Contact Form Submission (Save to CRM Leads)
+            // Contact Form Submission (Save to CRM Leads, Send Email, and Redirect to WhatsApp)
             const contactForm = document.getElementById('contactForm');
             if (contactForm && typeof supabase !== 'undefined') {
                 contactForm.addEventListener('submit', async function(e) {
@@ -821,17 +833,42 @@
                             status: 'New'
                         };
 
+                        // 1. Save to Supabase DB (CRM)
                         const { error } = await supabase
                             .from('leads')
                             .insert([leadData]);
 
                         if (error) throw error;
 
-                        alert('✅ Thank you! Your message has been sent successfully. We will get back to you soon.');
+                        // 2. Send email in background using FormSubmit API
+                        fetch("https://formsubmit.co/ajax/puneethgp18@gmail.com", {
+                            method: "POST",
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: leadData.name,
+                                email: leadData.email,
+                                message: "Phone: " + leadData.phone + "\nRequirement: " + leadData.requirement,
+                                _subject: "New Website Lead: " + leadData.name
+                            })
+                        }).catch(e => console.error("Email send failed", e));
+
+                        // 3. Prepare WhatsApp Message
+                        const waMessage = `New Lead from Website:%0A*Name:* ${leadData.name}%0A*Email:* ${leadData.email}%0A*Phone:* ${leadData.phone}%0A*Requirement:* ${leadData.requirement}`;
+                        const waUrl = `https://wa.me/918296634105?text=${waMessage}`;
+                        
+                        // 4. Alert user and redirect
+                        showToast('Thank you! Your message has been saved. We are redirecting you to WhatsApp so you can connect directly with us.', 'success');
+                        setTimeout(() => {
+                            window.open(waUrl, '_blank');
+                        }, 1000);
+                        
                         contactForm.reset();
                     } catch (error) {
                         console.error('Error submitting form:', error);
-                        alert('❌ There was an error sending your message. Please try again later.');
+                        showToast('There was an error sending your message. Please try again later.', 'error');
                     } finally {
                         submitBtn.disabled = false;
                         submitBtn.textContent = 'Send Message';
@@ -847,6 +884,7 @@
             }
         });
     </script>
+    <script src="assets/js/shared.js"></script>
 </body>
 
 </html>

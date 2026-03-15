@@ -1,5 +1,7 @@
 // Admin Authentication
-const ADMIN_PASSWORD = 'admin123'; // CHANGE THIS PASSWORD!
+// ⚠️ SECURITY: Default is null — login will FAIL if Supabase is unreachable.
+// Set your password in Supabase > global_settings > key='admin_password' > value={"password":"your_password"}
+let ADMIN_PASSWORD = null;
 let isAuthenticated = false;
 
 // Elements
@@ -9,6 +11,39 @@ const loginForm = document.getElementById('loginForm');
 const passwordInput = document.getElementById('passwordInput');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
+
+// --- Toast Notification System ---
+window.showToast = function(message, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = '🔔';
+    if (type === 'success') icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'info') icon = 'ℹ️';
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-message">${message}</div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-closing');
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }, 4000);
+};
 
 // Tab Elements
 const tabBtns = document.querySelectorAll('.tab-btn');
@@ -44,29 +79,51 @@ const pendingImages = {
 };
 
 // Login Handler
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const password = passwordInput.value;
-    
-    if (password === ADMIN_PASSWORD) {
-        isAuthenticated = true;
-        loginSection.style.display = 'none';
-        adminDashboard.style.display = 'block';
-        loginError.textContent = '';
-        loadManageContent(); // Load content when logging in
-    } else {
-        loginError.textContent = 'Invalid password. Please try again.';
-        passwordInput.value = '';
-    }
-});
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.textContent = '🔐 Authenticating...';
+
+        try {
+            const {data, error} = await supabase.from('global_settings').select('value').eq('key', 'admin_password').single();
+            if (data && data.value && data.value.password) {
+                ADMIN_PASSWORD = data.value.password;
+            }
+        } catch(err) {
+            console.error('Error fetching password from Supabase:', err);
+        }
+
+        // 🔐 SECURITY: If password couldn't be loaded from Supabase, block login entirely.
+        // This removes the old 'admin123' backdoor.
+        if (!ADMIN_PASSWORD) {
+            loginError.textContent = '⚠️ Cannot connect to authentication server. Check your internet connection and try again.';
+            return;
+        }
+
+        const password = passwordInput.value;
+
+        if (password === ADMIN_PASSWORD) {
+            isAuthenticated = true;
+            loginSection.style.display = 'none';
+            adminDashboard.style.display = 'block';
+            loginError.textContent = '';
+            loadManageContent();
+            loadProjectsList();
+        } else {
+            loginError.textContent = '❌ Invalid password. Please try again.';
+            passwordInput.value = '';
+        }
+    });
+}
 
 // Logout Handler
-logoutBtn.addEventListener('click', () => {
-    isAuthenticated = false;
-    adminDashboard.style.display = 'none';
-    loginSection.style.display = 'flex';
-    passwordInput.value = '';
-});
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        isAuthenticated = false;
+        // Redirect to homepage after logout
+        window.location.href = 'index.html';
+    });
+}
 
 // Tab Navigation
 tabBtns.forEach(btn => {
@@ -230,7 +287,7 @@ if (saveMaterialImagesBtn) {
         const totalFiles = ceilingTilesFiles.length + roofTilesFiles.length + fabricationFiles.length;
         
         if (totalFiles === 0) {
-            alert('Please upload at least one material image in any category!');
+            showToast('Please upload at least one material image in any category!', 'info');
             return;
         }
         
@@ -277,7 +334,7 @@ if (saveMaterialImagesBtn) {
                 
             if (saveError) throw saveError;
             
-            alert(`✅ Successfully uploaded ${totalFiles} images to the cloud!`);
+            showToast(`Successfully uploaded ${totalFiles} images to the cloud!`, 'success');
             
             // Clear inputs
             ceilingTilesFiles = []; roofTilesFiles = []; fabricationFiles = [];
@@ -289,7 +346,7 @@ if (saveMaterialImagesBtn) {
             
         } catch (error) {
             console.error('❌ Cloud Material Upload Error:', error);
-            alert('❌ Error uploading materials: ' + error.message);
+            showToast('Error uploading materials: ' + error.message, 'error');
         } finally {
             saveMaterialImagesBtn.disabled = false;
             saveMaterialImagesBtn.textContent = 'Save All Material Images';
@@ -312,27 +369,49 @@ function showInstructions(type, files) {
 // Change Password
 const changePasswordBtn = document.getElementById('changePasswordBtn');
 if (changePasswordBtn) {
-    changePasswordBtn.addEventListener('click', () => {
+    changePasswordBtn.addEventListener('click', async () => {
         const currentPassword = document.getElementById('currentPassword').value;
         const newPassword = document.getElementById('newPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
         if (currentPassword !== ADMIN_PASSWORD) {
-            alert('❌ Current password is incorrect!');
+            showToast('Current password is incorrect!', 'error');
             return;
         }
         
         if (newPassword.length < 6) {
-            alert('❌ New password must be at least 6 characters long!');
+            showToast('New password must be at least 6 characters long!', 'error');
             return;
         }
         
         if (newPassword !== confirmPassword) {
-            alert('❌ New passwords do not match!');
+            showToast('New passwords do not match!', 'error');
             return;
         }
         
-        alert(`✅ Password Changed!\n\nYour new password is: ${newPassword}\n\nIMPORTANT: To make this permanent, you need to:\n1. Open admin-script.js\n2. Find line 2: const ADMIN_PASSWORD = 'admin123';\n3. Change 'admin123' to '${newPassword}'\n4. Save the file\n\nOtherwise, this change will be lost when you refresh the page.`);
+        try {
+            changePasswordBtn.disabled = true;
+            changePasswordBtn.textContent = 'Saving...';
+            
+            const { error } = await supabase
+                .from('global_settings')
+                .upsert({ key: 'admin_password', value: { password: newPassword } });
+                
+            if (error) throw error;
+            
+            ADMIN_PASSWORD = newPassword;
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            showToast('Password successfully changed! The new password is now active.', 'success');
+        } catch(err) {
+            console.error('Error saving password:', err);
+            showToast('Failed to update password in database.', 'error');
+        } finally {
+            changePasswordBtn.disabled = false;
+            changePasswordBtn.textContent = 'Change Password';
+        }
     });
 }
 
@@ -384,8 +463,6 @@ if (fabricationBox?.parentElement) {
 }
 
 console.log('✅ Admin Panel Loaded Successfully');
-console.log('🔐 Default Password: admin123');
-console.log('⚠️  Remember to change the password in admin-script.js!');
 
 // =========================================
 // PROJECT DETAIL MODAL FUNCTIONALITY
@@ -545,96 +622,112 @@ const projectsData = {
     }
 };
 
-// Open Project Modal
-function openProjectModal(projectId) {
-    const modal = document.getElementById('projectModal');
-    const modalBody = document.getElementById('modalBody');
-    const project = projectsData[projectId];
-    
-    if (!project) {
-        console.error('Project not found:', projectId);
-        return;
-    }
-    
-    // Build modal content
-    const modalContent = `
-        <div class="project-detail">
-            <h1 class="project-title">${project.title}</h1>
-            <p class="project-description">${project.description}</p>
-            
-            <div class="project-info-grid">
-                <div class="info-card">
-                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Project Timeline</h3>
-                    <p><strong>Completed:</strong> ${project.completionDate}</p>
-                    <p><strong>Duration:</strong> ${project.duration}</p>
-                </div>
-                
-                <div class="info-card">
-                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Project Location</h3>
-                    <p>${project.address}</p>
-                </div>
-                
-                <div class="info-card">
-                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Owner Information</h3>
-                    <p><strong>Name:</strong> ${project.owner.name}</p>
-                    <p><strong>Phone:</strong> <a href="tel:${project.owner.phone}">${project.owner.phone}</a></p>
-                    <p><strong>Email:</strong> <a href="mailto:${project.owner.email}">${project.owner.email}</a></p>
-                </div>
-            </div>
-            
-            <h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px; vertical-align:middle;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Project Gallery - Different Stages</h2>
-            <div class="project-gallery">
-                ${project.images.map(img => `
-                    <div class="project-image">
-                        <img src="${img.url}" alt="${img.caption}" onerror="this.src='https://via.placeholder.com/400x300?text=${encodeURIComponent(img.stage)}'">
-                        <div class="image-info">
-                            <span class="stage-badge">${img.stage}</span>
-                            <p>${img.caption}</p>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold-leaf-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px; vertical-align:middle;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Raw Materials Used</h2>
-            <div class="materials-list">
-                ${project.materials.map(material => `
-                    <div class="material-item">
-                        <div class="material-header">
-                            <h4>${material.name}</h4>
-                            <span class="material-quantity">${material.quantity}</span>
-                        </div>
-                        <p class="material-supplier">Supplier: ${material.supplier}</p>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
+
+// =========================================
+// IMAGE LIGHTBOX
+// =========================================
+let lightboxImages = [];
+let lightboxCurrentIndex = 0;
+
+function initLightbox() {
+    if (document.getElementById('imageLightbox')) return;
+    const lb = document.createElement('div');
+    lb.id = 'imageLightbox';
+    lb.className = 'lightbox';
+    lb.innerHTML = `
+        <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">&#x2715;</button>
+        <button class="lightbox-prev" onclick="lightboxNav(-1)" aria-label="Previous">&#8249;</button>
+        <img id="lightboxImg" src="" alt="Project image">
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+        <button class="lightbox-next" onclick="lightboxNav(1)" aria-label="Next">&#8250;</button>
     `;
-    
-    if (modalBody) modalBody.innerHTML = modalContent;
-    if (modal) modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    lb.addEventListener('click', function (e) {
+        if (e.target === lb) closeLightbox();
+    });
+    document.body.appendChild(lb);
+}
+
+window.openLightbox = function (images, index) {
+    lightboxImages = images;
+    lightboxCurrentIndex = index;
+    initLightbox();
+    updateLightbox();
+    document.getElementById('imageLightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeLightbox = function () {
+    const lb = document.getElementById('imageLightbox');
+    if (lb) lb.classList.remove('active');
+    // Don't restore body overflow here — project modal may still be open
+};
+
+window.lightboxNav = function (direction) {
+    if (lightboxImages.length === 0) return;
+    lightboxCurrentIndex = (lightboxCurrentIndex + direction + lightboxImages.length) % lightboxImages.length;
+    updateLightbox();
+};
+
+function updateLightbox() {
+    const img = document.getElementById('lightboxImg');
+    const caption = document.getElementById('lightboxCaption');
+    const counter = document.getElementById('lightboxCounter');
+    const prevBtn = document.querySelector('.lightbox-prev');
+    const nextBtn = document.querySelector('.lightbox-next');
+    const current = lightboxImages[lightboxCurrentIndex];
+    if (!current) return;
+
+    // Animate swap
+    if (img) {
+        img.style.opacity = '0';
+        img.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            img.src = current.url;
+            img.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            img.style.opacity = '1';
+            img.style.transform = 'scale(1)';
+        }, 100);
+    }
+    if (caption) caption.textContent = current.caption || '';
+    if (counter) counter.textContent = `${lightboxCurrentIndex + 1} / ${lightboxImages.length}`;
+
+    const multipleImages = lightboxImages.length > 1;
+    if (prevBtn) prevBtn.style.display = multipleImages ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = multipleImages ? 'flex' : 'none';
+    if (counter) counter.style.display = multipleImages ? '' : 'none';
 }
 
 // Close Project Modal
 function closeProjectModal() {
     const modal = document.getElementById('projectModal');
     if (modal) modal.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Restore scrolling
+    document.body.style.overflow = 'auto';
+    closeLightbox();
+    // Reset URL to remove ?project= parameter
+    if (window.history && window.history.pushState) {
+        history.pushState({}, '', window.location.pathname);
+    }
 }
 
-// Close modal when clicking outside of it
-window.onclick = function(event) {
+// Close project modal when clicking outside of it
+window.addEventListener('click', function (event) {
     const modal = document.getElementById('projectModal');
     if (event.target === modal) {
         closeProjectModal();
     }
-}
+});
 
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeProjectModal();
+// Keyboard shortcuts
+document.addEventListener('keydown', function (event) {
+    const lb = document.getElementById('imageLightbox');
+    if (lb && lb.classList.contains('active')) {
+        if (event.key === 'ArrowLeft')  lightboxNav(-1);
+        if (event.key === 'ArrowRight') lightboxNav(1);
+        if (event.key === 'Escape')     closeLightbox();
+        return;
     }
+    if (event.key === 'Escape') closeProjectModal();
 });
 
 // =========================================
@@ -781,6 +874,148 @@ async function deleteProject(projectId) {
     }
 }
 
+// --- Projects Metadata (Pins and Order) ---
+let projectsMeta = { pinned: [], customOrder: [] };
+
+async function loadProjectsMeta() {
+    if (!supabase) return;
+    try {
+        const { data, error } = await supabase
+            .from('global_settings')
+            .select('value')
+            .eq('key', 'projects_meta')
+            .single();
+        if (data && data.value) {
+            projectsMeta = data.value;
+            if(!projectsMeta.pinned) projectsMeta.pinned = [];
+            if(!projectsMeta.customOrder) projectsMeta.customOrder = [];
+        }
+    } catch(e) { /* ignore */ }
+}
+
+async function saveProjectsMeta() {
+    if (!supabase) return;
+    try {
+        await supabase
+            .from('global_settings')
+            .upsert({ key: 'projects_meta', value: projectsMeta });
+    } catch(e) { console.error('Error saving meta', e); }
+}
+
+window.togglePinProject = async function(id) {
+    if (projectsMeta.pinned.includes(id)) {
+        projectsMeta.pinned = projectsMeta.pinned.filter(p => p !== id);
+    } else {
+        projectsMeta.pinned.unshift(id); // add to top
+    }
+    await saveProjectsMeta();
+    loadProjectsList();
+};
+
+// --- Drag and Drop Reordering logic ---
+let draggedProjectId = null;
+
+window.handleDragStart = function(e, id) {
+    draggedProjectId = id;
+    const card = e.target.closest('.project-card');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+    
+    // Small delay to allow the "ghost image" to be created before we hide the original
+    setTimeout(() => {
+        if (card) card.classList.add('dragging');
+    }, 0);
+};
+
+window.handleDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    // --- Auto-scroll during drag ---
+    const threshold = 150; // distance from top/bottom to start scrolling
+    const speed = 12;      // scroll speed
+    
+    if (e.clientY < threshold) {
+        window.scrollBy(0, -speed);
+    } else if (window.innerHeight - e.clientY < threshold) {
+        window.scrollBy(0, speed);
+    }
+    
+    return false;
+};
+
+window.handleDragEnter = function(e) {
+    e.preventDefault();
+    const card = e.target.closest('.project-card');
+    if (card) card.style.borderTop = '2px solid var(--gold-leaf-accent)';
+};
+
+window.handleDragLeave = function(e) {
+    const card = e.target.closest('.project-card');
+    if (card) card.style.borderTop = '';
+};
+
+window.handleDragEnd = function(e) {
+    document.querySelectorAll('.project-card').forEach(c => {
+        c.classList.remove('dragging');
+        c.style.borderTop = '';
+    });
+};
+
+window.handleDrop = async function(e, targetId) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    document.querySelectorAll('.project-card').forEach(c => c.style.borderTop = '');
+    if (!draggedProjectId || draggedProjectId === targetId) return;
+
+    // Visual Move: Move the dragged card in the DOM immediately
+    const draggedEl = document.querySelector(`.project-card.dragging`);
+    const targetEl = e.target.closest('.project-card');
+    
+    if (draggedEl && targetEl) {
+        const parent = targetEl.parentNode;
+        // Determine if we should insert before or after
+        const rect = targetEl.getBoundingClientRect();
+        const nextHeader = (e.clientY - rect.top) > (rect.height / 2);
+        
+        if (nextHeader) {
+            parent.insertBefore(draggedEl, targetEl.nextSibling);
+        } else {
+            parent.insertBefore(draggedEl, targetEl);
+        }
+        
+        // Update local projectsMeta.customOrder based on the new visual sequence
+        const currentCards = parent.querySelectorAll('.project-card');
+        projectsMeta.customOrder = Array.from(currentCards).map(card => card.getAttribute('data-id'));
+        
+        // Save to cloud silently in background
+        saveProjectsMeta();
+        console.log('📦 Project order updated and saving to cloud...');
+    }
+};
+
+function sortProjectsArray(projectsArray) {
+    return projectsArray.sort((a, b) => {
+        let aPinned = projectsMeta.pinned.includes(a.id);
+        let bPinned = projectsMeta.pinned.includes(b.id);
+        
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+        
+        let aIndex = projectsMeta.customOrder.indexOf(a.id);
+        let bIndex = projectsMeta.customOrder.indexOf(b.id);
+        
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex === -1 && bIndex !== -1) return -1; // New projects go to top of unpinned
+        if (aIndex !== -1 && bIndex === -1) return 1;  // Old projects go below new ones
+        
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeB - timeA;
+    });
+}
+
 // Load projects list
 async function loadProjectsList() {
     const projectsList = document.getElementById('projectsList');
@@ -788,8 +1023,13 @@ async function loadProjectsList() {
     
     projectsList.innerHTML = '<div class="loading">⏳ Fetching your projects from the cloud...</div>';
     
+    await loadProjectsMeta();
+    
     const projects = await getAllProjects();
     const projectsArray = Object.values(projects);
+    
+    // Sort projects using robust pinning and order rules
+    sortProjectsArray(projectsArray);
     
     if (projectsArray.length === 0) {
         projectsList.innerHTML = `
@@ -809,9 +1049,12 @@ async function loadProjectsList() {
                            ((project.progressImages && project.progressImages.length > 0) ? project.progressImages[0] : 
                            ((project.materialImages && project.materialImages.length > 0) ? project.materialImages[0] : 'https://via.placeholder.com/150'));
         return `
-        <div class="project-card">
+        <div class="project-card" data-id="${project.id}" draggable="true" ondragstart="handleDragStart(event, '${project.id}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, '${project.id}')" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
             <div class="project-header-card">
                 <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="drag-handle" title="Drag to reorder" style="cursor: grab; display: flex; align-items: center; color: var(--text-muted); padding: 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </div>
                     <img src="${previewUrl}" alt="Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
                     <div>
                         <h3>${project.title}</h3>
@@ -819,6 +1062,7 @@ async function loadProjectsList() {
                     </div>
                 </div>
                 <div class="project-actions">
+                    <button class="pin-btn" onclick="togglePinProject('${project.id}')" style="background: ${projectsMeta.pinned.includes(project.id) ? '#ffd700' : ''}; color: ${projectsMeta.pinned.includes(project.id) ? '#000' : ''}; border: 1px solid #ddd;">${projectsMeta.pinned.includes(project.id) ? '📌 Unpin' : '📍 Pin'}</button>
                     <button class="edit-btn" onclick="editProject('${project.id}')">✏️ Edit</button>
                     <button class="delete-btn" onclick="confirmDeleteProject('${project.id}')">🗑️ Delete</button>
                 </div>
@@ -916,38 +1160,17 @@ async function openProjectModal(projectId) {
         allImages.push(...project.images);
     }
     
-    // Build modal content
+    // Build modal content — images are clickable to open lightbox
     const modalContent = `
         <div class="project-detail">
             <h1 class="project-title">${project.title}</h1>
             <p class="project-description">${project.description}</p>
-            
-            <div class="project-info-grid">
-                <div class="info-card">
-                    <h3>📅 Project Timeline</h3>
-                    <p><strong>Completed:</strong> ${project.completionDate || 'N/A'}</p>
-                    <p><strong>Duration:</strong> ${project.duration || 'N/A'}</p>
-                </div>
-                
-                <div class="info-card">
-                    <h3>📍 Project Location</h3>
-                    <p>${project.address}</p>
-                </div>
-                
-                <div class="info-card">
-                    <h3>👤 Owner Information</h3>
-                    <p><strong>Name:</strong> ${project.owner?.name || 'N/A'}</p>
-                    ${project.owner?.phone ? `<p><strong>Phone:</strong> <a href="tel:${project.owner.phone}">${project.owner.phone}</a></p>` : ''}
-                    ${project.owner?.email ? `<p><strong>Email:</strong> <a href="mailto:${project.owner.email}">${project.owner.email}</a></p>` : ''}
-                </div>
-            </div>
-            
+
             ${allImages.length > 0 ? `
-                <h2 class="section-title">📸 Project Gallery</h2>
                 <div class="project-gallery">
-                    ${allImages.map(img => `
-                        <div class="project-image">
-                            <img src="${img.url}" alt="${img.caption}" onerror="this.src='https://via.placeholder.com/400x300?text=${encodeURIComponent(img.stage || 'Image')}'">
+                    ${allImages.map((img, idx) => `
+                        <div class="project-image" onclick="openLightbox(window._currentModalImages, ${idx})" title="Click to enlarge">
+                            <img src="${img.url}" alt="${img.caption}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=${encodeURIComponent(img.stage || 'Image')}'">
                             <div class="image-info">
                                 <span class="stage-badge">${img.stage || 'Image'}</span>
                                 <p>${img.caption}</p>
@@ -956,7 +1179,27 @@ async function openProjectModal(projectId) {
                     `).join('')}
                 </div>
             ` : ''}
-            
+
+            <div class="project-info-grid">
+                <div class="info-card">
+                    <h3>📅 Project Timeline</h3>
+                    <p><strong>Completed:</strong> ${project.completionDate || 'N/A'}</p>
+                    <p><strong>Duration:</strong> ${project.duration || 'N/A'}</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📍 Project Location</h3>
+                    <p>${project.address}</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>👤 Owner Information</h3>
+                    <p><strong>Name:</strong> ${project.owner?.name || 'N/A'}</p>
+                    ${project.owner?.phone ? `<p><strong>Phone:</strong> <a href="tel:${project.owner.phone}">${project.owner.phone}</a></p>` : ''}
+                    ${project.owner?.email ? `<p><strong>Email:</strong> <a href="mailto:${project.owner.email}">${project.owner.email}</a></p>` : ''}
+                </div>
+            </div>
+
             ${project.materials && project.materials.length > 0 ? `
                 <h2 class="section-title">🔨 Raw Materials Used</h2>
                 <div class="materials-list">
@@ -971,12 +1214,47 @@ async function openProjectModal(projectId) {
                     `).join('')}
                 </div>
             ` : ''}
+
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 12px; flex-wrap: wrap;">
+                <button onclick="shareProject('${projectId}', '${project.title.replace(/'/g, "\\'")}')"
+                    style="display:inline-flex; align-items:center; gap:8px; background:var(--surface); color:var(--text); border:1px solid var(--border); padding:10px 18px; border-radius:8px; cursor:pointer; font-size:0.9rem; font-weight:500; transition:all 0.2s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    Share Project
+                </button>
+            </div>
         </div>
     `;
-    
+
+    // Store images in a global for lightbox access from onclick
+    window._currentModalImages = allImages;
+
     if (modalBody) modalBody.innerHTML = modalContent;
     if (modal) modal.style.display = 'flex';
+
+    // Update URL for sharing
+    if (window.history && window.history.pushState) {
+        history.pushState({ projectId }, '', '?project=' + projectId);
+    }
 }
+
+// Share a specific project via URL
+window.shareProject = function (projectId, projectTitle) {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?project=${projectId}`;
+    if (navigator.share) {
+        navigator.share({
+            title: `Irfaaz Roofing – ${projectTitle}`,
+            text: `Check out this roofing project: ${projectTitle}`,
+            url: shareUrl
+        }).catch(err => console.log('Share cancelled:', err));
+    } else {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast('✅ Project link copied to clipboard!', 'success');
+        }).catch(() => {
+            // Final fallback: prompt
+            prompt('Copy this link to share:', shareUrl);
+        });
+    }
+};
 
 // Manage Materials
 async function loadExistingMaterials() {
@@ -1043,12 +1321,12 @@ async function deleteExistingMaterial(category, index) {
                 
             if (saveError) throw saveError;
             
-            alert('✅ Material deleted successfully!');
+            showToast('Material deleted successfully!', 'success');
             loadExistingMaterials(); // Refresh
         }
     } catch (e) {
         console.error("Error deleting material:", e);
-        alert('❌ Error deleting material: ' + e.message);
+        showToast('Error deleting material: ' + e.message, 'error');
     }
 }
 
@@ -1129,7 +1407,7 @@ async function updateLeadStatus(id, newStatus) {
         if (error) throw error;
         loadLeadsList(); // Refresh
     } catch (e) {
-        alert('Failed to update status: ' + e.message);
+        showToast('Failed to update status: ' + e.message, 'error');
     }
 }
 
@@ -1250,7 +1528,7 @@ async function saveManageContent() {
         }
 
         if (!supabase) {
-            alert("✅ Saved locally. (Supabase not connected)");
+            showToast("✅ Saved locally. (Supabase not connected)", 'success');
             return;
         }
 
@@ -1302,13 +1580,13 @@ async function saveManageContent() {
             timestampEl.innerText = `Last updated: ${new Date(now).toLocaleString()}`;
         }
 
-        alert("✅ All changes saved successfully to cloud!");
+        showToast("All changes saved successfully to cloud!", 'success');
         
         // Refresh local UI to show any formatted results from cloud
         loadManageContent();
     } catch (e) {
         console.error("Error saving content:", e);
-        alert("❌ Saved locally, but failed to sync with cloud: " + e.message);
+        showToast("Saved locally, but failed to sync with cloud: " + e.message, 'error');
     } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Changes';
@@ -1475,19 +1753,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const allProjects = await getAllProjects();
                     const existing = allProjects[projectData.id];
                     if (existing) {
-                        projectData.outputImages = existing.outputImages || [];
-                        projectData.progressImages = existing.progressImages || [];
-                        projectData.materialImages = existing.materialImages || [];
+                        projectData.outputImages = (existing.outputImages || []).filter(url => !deletedImages.outputImages.includes(url));
+                        projectData.progressImages = (existing.progressImages || []).filter(url => !deletedImages.progressImages.includes(url));
+                        projectData.materialImages = (existing.materialImages || []).filter(url => !deletedImages.materialImages.includes(url));
                     }
                 }
                 
                 await saveProject(projectData);
-                alert('✅ Project saved successfully!');
+                showToast('Project saved successfully!', 'success');
                 closeProjectEditModal();
                 loadProjectsList();
             } catch (err) {
                 console.error('Error saving project:', err);
-                alert('❌ Error saving project: ' + err.message);
+                showToast('Error saving project: ' + err.message, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Project';
@@ -1534,7 +1812,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+let deletedImages = { outputImages: [], progressImages: [], materialImages: [] };
+
 function resetProjectForm() {
+    deletedImages = { outputImages: [], progressImages: [], materialImages: [] };
     const form = document.getElementById('projectForm');
     if (form) form.reset();
     document.getElementById('projectId').value = '';
@@ -1572,6 +1853,70 @@ async function editProject(projectId) {
     if (project.materials && project.materials.length > 0) {
         project.materials.forEach(m => addMaterialRow(m));
     }
+
+    const displayExistingImages = (containerId, urls, type) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if(urls && urls.length > 0) {
+            urls.forEach(url => {
+                if(deletedImages[type].includes(url)) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'inline-block';
+                wrapper.style.marginRight = '5px';
+                wrapper.style.marginBottom = '5px';
+
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.width = '60px';
+                img.style.height = '60px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.display = 'block';
+
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = '×';
+                delBtn.style.position = 'absolute';
+                delBtn.style.top = '-5px';
+                delBtn.style.right = '-5px';
+                delBtn.style.background = 'red';
+                delBtn.style.color = 'white';
+                delBtn.style.border = 'none';
+                delBtn.style.borderRadius = '50%';
+                delBtn.style.width = '20px';
+                delBtn.style.height = '20px';
+                delBtn.style.cursor = 'pointer';
+                delBtn.style.fontSize = '14px';
+                delBtn.style.lineHeight = '14px';
+                delBtn.style.display = 'flex';
+                delBtn.style.alignItems = 'center';
+                delBtn.style.justifyContent = 'center';
+                
+                delBtn.onclick = (e) => {
+                    e.preventDefault();
+                    if(confirm('Delete this photo?')) {
+                        deletedImages[type].push(url);
+                        wrapper.remove();
+                    }
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(delBtn);
+                container.appendChild(wrapper);
+            });
+            const p = document.createElement('p');
+            p.textContent = 'Existing Images (Click × to remove. Will apply upon saving project)';
+            p.style.fontSize = '12px';
+            p.style.color = '#888';
+            p.style.width = '100%';
+            container.prepend(p);
+        }
+    };
+    
+    displayExistingImages('outputImagesPreview', project.outputImages, 'outputImages');
+    displayExistingImages('progressImagesPreview', project.progressImages, 'progressImages');
+    displayExistingImages('materialImagesPreview', project.materialImages, 'materialImages');
     
     document.getElementById('projectEditModal').style.display = 'flex';
 }
@@ -1580,10 +1925,10 @@ async function confirmDeleteProject(projectId) {
     if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
         try {
             await deleteProject(projectId);
-            alert('✅ Project deleted successfully!');
+            showToast('Project deleted successfully!', 'success');
             loadProjectsList();
         } catch (err) {
-            alert('❌ Error deleting project: ' + err.message);
+            showToast('Error deleting project: ' + err.message, 'error');
         }
     }
 }
